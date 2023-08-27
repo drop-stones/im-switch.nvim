@@ -13,6 +13,8 @@ end
 local function ime_off()
 	if Path:new(vim.g["ime-switch-win#executable"]):exists() then
 		local output = vim.fn.system({ vim.g["ime-switch-win#executable"], "off" })
+	else
+		local output = vim.fn.system({ vim.g["ime-switch-win#bin"], "off" })
 	end
 end
 
