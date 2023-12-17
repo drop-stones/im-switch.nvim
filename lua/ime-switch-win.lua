@@ -10,12 +10,16 @@ local function is_supported()
 	end
 end
 
-local function ime_off()
+local function run_ime_switch_win(arg)
 	if Path:new(vim.g["ime-switch-win#executable"]):exists() then
-		local output = vim.fn.system({ vim.g["ime-switch-win#executable"], "off" })
+		return vim.fn.system({ vim.g["ime-switch-win#executable"], arg })
 	else
-		local output = vim.fn.system({ vim.g["ime-switch-win#bin"], "off" })
+		return vim.fn.system({ vim.g["ime-switch-win#bin"], arg })
 	end
+end
+
+local function ime_off()
+	run_ime_switch_win("off")
 end
 
 function M.setup()
@@ -24,7 +28,7 @@ function M.setup()
 	end
 
 	-- Setup autocommand functions
-	local events = { "BufWinEnter", "BufWinLeave", "InsertEnter", "InsertLeave" }
+	local events = { "InsertEnter", "InsertLeave" }
 	local group_id = vim.api.nvim_create_augroup("ime-switch-win", { clear = true })
 	vim.api.nvim_create_autocmd(events, {
 		callback = ime_off,
