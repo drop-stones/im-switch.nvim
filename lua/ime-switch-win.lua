@@ -28,7 +28,7 @@ function M.setup()
 	end
 
 	-- Setup autocommand functions
-	local events = { "InsertEnter", "InsertLeave" }
+	local events = { "InsertEnter", "InsertLeave", "CmdlineEnter", "CmdlineLeave" }
 	local group_id = vim.api.nvim_create_augroup("ime-switch-win", { clear = true })
 	vim.api.nvim_create_autocmd(events, {
 		callback = ime_off,
