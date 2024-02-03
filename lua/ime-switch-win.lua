@@ -1,13 +1,14 @@
 local M = {}
 
+local utils = require("utils")
 local Path = require("plenary.path")
 
 local function is_supported()
-	if vim.fn.has("win32") == 1 or vim.fn.has("wsl") == 1 then
+	local os = utils.get_os()
+	if os == "windows" or os == "wsl" then
 		return true
-	else
-		return false
 	end
+	return false
 end
 
 local function run_ime_switch_win(arg)
