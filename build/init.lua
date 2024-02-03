@@ -2,23 +2,24 @@
 
 local M = {}
 
-local Path = require("plenary.path")
+local function GetOsName()
+	local uname = vim.loop.os_uname()
+	local os = uname.sysname
+	if (os == "Linuux") and uname.release:lower():find("microsoft") then
+		return "WSL"
+	else
+		if os:find("Windows") then
+			return "Windows"
+		end
+	end
+	return os
+end
 
 function M.build()
-	-- Make `bin/ime-switch-win.exe` executable
-	local add_executable_mode = function()
-		vim.fn.system({ "chmod", "+x", vim.g["ime-switch-win#bin"] })
-	end
-
-	if vim.fn.executable("cargo") == 1 then
+	local os = GetOsName()
+	if (os == "Darwin") or (os == "Windows") then
+		-- if os is darwin or windows, build ime-switch
 		vim.fn.system({ "cargo", "build", "--release", "--manifest-path", vim.g["ime-switch-win#cargo"] })
-		-- if build is failed, use `bin/ime-switch-win.exe` instead
-		if vim.v.shell_error ~= 0 then
-			add_executable_mode()
-		end
-	else
-		-- if cargo is not available, use `bin/ime-switch-win.exe` instead
-		add_executable_mode()
 	end
 end
 
