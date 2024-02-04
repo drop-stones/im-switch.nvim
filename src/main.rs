@@ -3,7 +3,7 @@ use std::env;
 #[cfg(target_os = "windows")]
 mod windows;
 #[cfg(target_os = "windows")]
-use windows as ime;
+use windows::ime;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
