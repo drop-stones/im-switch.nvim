@@ -1,6 +1,6 @@
-if vim.g["ime-switch-win"] ~= nil then
+if vim.g.loaded_ime_switch == 1 then
 	return
 end
-vim.g["ime-switch-win"] = 1
+vim.g.loaded_ime_switch = 1
 
 require("ime-switch-win").setup()
