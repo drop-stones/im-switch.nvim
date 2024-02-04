@@ -1,30 +1,13 @@
+local utils = require("utils")
+
 local M = {}
 
-local utils = require("utils")
-local Path = require("plenary.path")
-
-local function is_supported()
-	local os = utils.get_os()
-	if os == "windows" or os == "wsl" then
-		return true
-	end
-	return false
-end
-
-local function run_ime_switch_win(arg)
-	if Path:new(vim.g["ime-switch-win#executable"]):exists() then
-		return vim.fn.system({ vim.g["ime-switch-win#executable"], arg })
-	else
-		return vim.fn.system({ vim.g["ime-switch-win#bin"], arg })
-	end
-end
-
 local function ime_off()
-	run_ime_switch_win("off")
+	vim.fn.system({ utils.get_executable_path(), "off" })
 end
 
 function M.setup()
-	if not is_supported() then
+	if not utils.is_supported() then
 		return
 	end
 
