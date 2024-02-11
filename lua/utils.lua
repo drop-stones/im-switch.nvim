@@ -56,9 +56,9 @@ end
 
 function M.get_executable_path()
 	local executable_path =
-		get_plugin_root_path():joinpath("target/release/ime-switch-win" .. get_executable_extension(false))
+		get_plugin_root_path():joinpath("target/release/ime-switch" .. get_executable_extension(false))
 	local prebuilt_executable_path =
-		get_plugin_root_path():joinpath("bin/ime-switch-win" .. get_executable_extension(true))
+		get_plugin_root_path():joinpath("bin/ime-switch" .. get_executable_extension(true))
 	if executable_path:exists() then
 		return executable_path:absolute()
 	else

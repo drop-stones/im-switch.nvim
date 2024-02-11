@@ -32,7 +32,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ime-switch-win"
+name = "ime-switch"
 version = "0.1.0"
 dependencies = [
  "icrate",
