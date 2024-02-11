@@ -32,6 +32,19 @@ local function get_plugin_root_path()
 	return Path:new(root_path):parent():parent()
 end
 
+-- get extension
+local function get_executable_extension(is_prebuilt)
+	local os = M.get_os()
+	if (os == "wsl") or (os == "windows") then
+		return ".exe"
+	elseif os == "mac" then
+		if is_prebuilt == true then
+			return ".bin"
+		end
+	end
+	return ""
+end
+
 function M.is_supported()
 	local os = M.get_os()
 	return (os == "windows") or (os == "wsl")
@@ -42,8 +55,10 @@ function M.get_cargo_toml_path()
 end
 
 function M.get_executable_path()
-	local executable_path = get_plugin_root_path():joinpath("target/release/ime-switch-win.exe")
-	local prebuilt_executable_path = get_plugin_root_path():joinpath("bin/ime-switch-win.exe")
+	local executable_path =
+		get_plugin_root_path():joinpath("target/release/ime-switch-win" .. get_executable_extension(false))
+	local prebuilt_executable_path =
+		get_plugin_root_path():joinpath("bin/ime-switch-win" .. get_executable_extension(true))
 	if executable_path:exists() then
 		return executable_path:absolute()
 	else
