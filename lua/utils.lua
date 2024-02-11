@@ -47,7 +47,7 @@ end
 
 function M.is_supported()
 	local os = M.get_os()
-	return (os == "windows") or (os == "wsl")
+	return (os == "windows") or (os == "wsl") or (os == "mac")
 end
 
 function M.get_cargo_toml_path()
