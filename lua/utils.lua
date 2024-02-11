@@ -66,4 +66,13 @@ function M.get_executable_path()
 	end
 end
 
+function M.ime_off(opts)
+	local os = M.get_os()
+	if (os == "wsl") or (os == "windows") then
+		vim.fn.system({ M.get_executable_path(), "off" })
+	elseif os == "mac" then
+		vim.fn.system({ M.get_executable_path(), opts.mac.default_locale })
+	end
+end
+
 return M

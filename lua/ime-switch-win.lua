@@ -2,11 +2,7 @@ local utils = require("utils")
 
 local M = {}
 
-local function ime_off()
-	vim.fn.system({ utils.get_executable_path(), "off" })
-end
-
-function M.setup()
+function M.setup(opts)
 	if not utils.is_supported() then
 		return
 	end
@@ -15,7 +11,9 @@ function M.setup()
 	local events = { "InsertEnter", "InsertLeave", "CmdlineEnter", "CmdlineLeave" }
 	local group_id = vim.api.nvim_create_augroup("ime-switch-win", { clear = true })
 	vim.api.nvim_create_autocmd(events, {
-		callback = ime_off,
+		callback = function()
+			utils.ime_off(opts)
+		end,
 		group = group_id,
 	})
 end
