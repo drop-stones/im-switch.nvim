@@ -1,2 +1,2 @@
 #[cfg(target_os = "windows")]
-pub mod ime;
+pub mod im;
