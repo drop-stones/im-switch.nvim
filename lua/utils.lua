@@ -67,7 +67,7 @@ function M.ime_off(opts)
 	elseif os == "mac" then
 		vim.fn.system({ M.get_executable_path(), opts.mac.default_im })
 	elseif os == "linux" then
-		vim.fn.system({ opts.linux.switch_im_command, opts.linux.default_im })
+		vim.fn.system(opts.linux.switch_to_default_im_command)
 	end
 end
 

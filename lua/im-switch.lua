@@ -11,7 +11,7 @@ function M.setup(opts)
 	end
 
 	-- Check options for linux
-	if (os == "linux") and (opts.linux.switch_im_command == nil or opts.linux.default_im == nil) then
+	if (os == "linux") and (opts.linux.switch_to_default_im_command == nil) then
 		return
 	end
 
