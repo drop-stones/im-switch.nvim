@@ -3,7 +3,15 @@ local utils = require("utils")
 local M = {}
 
 function M.setup(opts)
-	if not utils.is_supported() then
+	local os = utils.get_os()
+
+	-- Check options for mac
+	if (os == "mac") and (opts.mac.default_im == nil) then
+		return
+	end
+
+	-- Check options for linux
+	if (os == "linux") and (opts.linux.switch_im_command == nil or opts.linux.default_im == nil) then
 		return
 	end
 

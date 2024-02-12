@@ -45,11 +45,6 @@ local function get_executable_extension(is_prebuilt)
 	return ""
 end
 
-function M.is_supported()
-	local os = M.get_os()
-	return (os == "windows") or (os == "wsl") or (os == "mac")
-end
-
 function M.get_cargo_toml_path()
 	return get_plugin_root_path():joinpath("Cargo.toml"):absolute()
 end
@@ -57,8 +52,7 @@ end
 function M.get_executable_path()
 	local executable_path =
 		get_plugin_root_path():joinpath("target/release/ime-switch" .. get_executable_extension(false))
-	local prebuilt_executable_path =
-		get_plugin_root_path():joinpath("bin/ime-switch" .. get_executable_extension(true))
+	local prebuilt_executable_path = get_plugin_root_path():joinpath("bin/ime-switch" .. get_executable_extension(true))
 	if executable_path:exists() then
 		return executable_path:absolute()
 	else
@@ -71,7 +65,9 @@ function M.ime_off(opts)
 	if (os == "wsl") or (os == "windows") then
 		vim.fn.system({ M.get_executable_path(), "off" })
 	elseif os == "mac" then
-		vim.fn.system({ M.get_executable_path(), opts.mac.default_locale })
+		vim.fn.system({ M.get_executable_path(), opts.mac.default_im })
+	elseif os == "linux" then
+		vim.fn.system({ opts.linux.switch_im_command, opts.linux.default_im })
 	end
 end
 
