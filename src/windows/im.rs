@@ -14,12 +14,12 @@ unsafe fn get_ime() -> HWND {
     ime
 }
 
-pub unsafe fn get_input_method() -> bool {
+pub unsafe fn get_input_method() -> &'static str {
     let ime = get_ime();
-    !matches!(
-        SendMessageA(ime, WM_IME_CONTROL, IMC_GETOPENSTATUS, LPARAM(0)),
-        LRESULT { 0: 0 }
-    )
+    match SendMessageA(ime, WM_IME_CONTROL, IMC_GETOPENSTATUS, LPARAM(0)) {
+        LRESULT { 0: 0 } => "off",
+        _ => "on",
+    }
 }
 
 pub unsafe fn set_input_method(locale: &str) {
