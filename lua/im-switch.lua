@@ -5,6 +5,7 @@ local M = {}
 local default_opts = {
 	set_default_im_events = { "VimEnter", "FocusGained", "InsertLeave", "CmdlineLeave" },
 	set_previous_im_events = { "InsertEnter" },
+	save_im_events = { "InsertLeavePre" },
 }
 
 local function initialize_opts(opts)
@@ -14,6 +15,10 @@ local function initialize_opts(opts)
 
 	if opts.set_previous_im_events == nil then
 		opts.set_previous_im_events = default_opts.set_previous_im_events
+	end
+
+	if opts.save_im_events == nil then
+		opts.save_im_events = default_opts.save_im_events
 	end
 
 	return opts
@@ -26,23 +31,43 @@ function M.setup(opts)
 	local os = utils.get_os()
 
 	-- Check options for mac
-	if (os == "mac") and (opts.mac.default_im == nil) then
-		return
-	end
-
-	-- Check options for linux
-	if (os == "linux") and (opts.linux.switch_to_default_im_command == nil) then
+	if
+		((os == "wsl" or os == "windows") and (opts.windows == nil))
+		or ((os == "mac") and (opts.mac == nil))
+		or ((os == "linux") and (opts.linux == nil))
+	then
 		return
 	end
 
 	-- Setup autocommand functions
 	local group_id = vim.api.nvim_create_augroup("im-switch", { clear = true })
-	vim.api.nvim_create_autocmd(opts.set_default_im_events, {
-		callback = function()
-			utils.ime_off(opts)
-		end,
-		group = group_id,
-	})
+
+	if #opts.set_default_im_events > 0 then
+		vim.api.nvim_create_autocmd(opts.set_default_im_events, {
+			callback = function()
+				utils.ime_off(opts)
+			end,
+			group = group_id,
+		})
+	end
+
+	if #opts.set_previous_im_events > 0 then
+		vim.api.nvim_create_autocmd(opts.set_previous_im_events, {
+			callback = function()
+				utils.restore_previous_im(opts)
+			end,
+			group = group_id,
+		})
+	end
+
+	if #opts.save_im_events > 0 then
+		vim.api.nvim_create_autocmd(opts.save_im_events, {
+			callback = function()
+				utils.save_im(opts)
+			end,
+			group = group_id,
+		})
+	end
 end
 
 return M
