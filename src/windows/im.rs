@@ -24,8 +24,8 @@ pub unsafe fn get_input_method() -> &'static str {
 
 pub unsafe fn set_input_method(locale: &str) {
     let stat: LPARAM = match locale {
-        "on" | "open" | "1" => LPARAM(1),
-        "off" | "close" | "0" => LPARAM(0),
+        "on" => LPARAM(1),
+        "off" => LPARAM(0),
         _ => panic!("Error: Invalid argument"),
     };
     let ime = get_ime();
