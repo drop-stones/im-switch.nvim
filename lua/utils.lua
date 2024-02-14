@@ -64,7 +64,7 @@ local function get_current_im(opts)
 	local current_im = ""
 	local os = M.get_os()
 	if (os == "wsl") or (os == "windows") then
-		current_im = vim.fn.system({ M.get_executable_path() })
+		current_im = vim.fn.system({ M.get_executable_path(), "--get" })
 	elseif os == "mac" then
 		current_im = vim.fn.system({ M.get_executable_path() })
 	elseif os == "linux" then
@@ -81,7 +81,7 @@ end
 function M.ime_off(opts)
 	local os = M.get_os()
 	if (os == "wsl") or (os == "windows") then
-		vim.fn.system({ M.get_executable_path(), "off" })
+		vim.fn.system({ M.get_executable_path(), "--inactivate" })
 	elseif os == "mac" then
 		vim.fn.system({ M.get_executable_path(), opts.mac.default_im })
 	elseif os == "linux" then
@@ -99,7 +99,11 @@ function M.restore_previous_im(opts)
 
 	local os = M.get_os()
 	if (os == "wsl") or (os == "windows") then
-		vim.fn.system({ M.get_executable_path(), previous_im })
+		if previous_im == "on" then
+			vim.fn.system({ M.get_executable_path(), "--activate" })
+		elseif previous_im == "off" then
+			vim.fn.system({ M.get_executable_path(), "--inactivate" })
+		end
 	elseif os == "mac" then
 		vim.fn.system({ M.get_executable_path(), previous_im })
 	elseif os == "linux" then
