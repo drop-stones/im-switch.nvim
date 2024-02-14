@@ -34,3 +34,28 @@ pub unsafe fn activate_im() {
 pub unsafe fn inactivate_im() {
     set_ime(LPARAM(0));
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serial_test::serial;
+
+    #[test]
+    #[serial]
+    fn test_activate_im() {
+        unsafe { activate_im() };
+        let current_im = unsafe { get_input_method() };
+        assert_eq!(current_im, "on");
+
+        // restore default im
+        unsafe { inactivate_im() };
+    }
+
+    #[test]
+    #[serial]
+    fn test_inactivate_im() {
+        unsafe { inactivate_im() };
+        let current_im = unsafe { get_input_method() };
+        assert_eq!(current_im, "off");
+    }
+}
