@@ -71,3 +71,16 @@ fn main() {
         cmd.print_help().unwrap();
     }
 }
+
+// Tests
+#[cfg(target_os = "windows")]
+#[cfg(test)]
+mod test {
+    use super::*;
+    use clap::CommandFactory;
+
+    #[test]
+    fn activate_arg() {
+        Args::command().debug_assert()
+    }
+}
