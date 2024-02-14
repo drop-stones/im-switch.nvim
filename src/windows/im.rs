@@ -14,6 +14,11 @@ unsafe fn get_ime() -> HWND {
     ime
 }
 
+unsafe fn set_ime(status: LPARAM) {
+    let ime = get_ime();
+    SendMessageA(ime, WM_IME_CONTROL, IMC_SETOPENSTATUS, status);
+}
+
 pub unsafe fn get_input_method() -> &'static str {
     let ime = get_ime();
     match SendMessageA(ime, WM_IME_CONTROL, IMC_GETOPENSTATUS, LPARAM(0)) {
@@ -22,12 +27,10 @@ pub unsafe fn get_input_method() -> &'static str {
     }
 }
 
-pub unsafe fn set_input_method(locale: &str) {
-    let stat: LPARAM = match locale {
-        "on" => LPARAM(1),
-        "off" => LPARAM(0),
-        _ => panic!("Error: Invalid argument"),
-    };
-    let ime = get_ime();
-    SendMessageA(ime, WM_IME_CONTROL, IMC_SETOPENSTATUS, stat);
+pub unsafe fn activate_im() {
+    set_ime(LPARAM(1));
+}
+
+pub unsafe fn inactivate_im() {
+    set_ime(LPARAM(0));
 }

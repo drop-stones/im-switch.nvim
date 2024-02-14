@@ -25,3 +25,6 @@ features = [
   "AppKit_NSTextView",
   "AppKit_NSTextInputContext",
 ]
+
+[dependencies]
+clap = { version = "4.5.0", features = ["derive"] }
