@@ -49,9 +49,12 @@ local function get_executable_extension(is_prebuilt)
 	return ""
 end
 
+function M.get_built_executable_path()
+	return get_plugin_root_path():joinpath("target/release/im-switch" .. get_executable_extension(false))
+end
+
 function M.get_executable_path()
-	local executable_path =
-		get_plugin_root_path():joinpath("target/release/im-switch" .. get_executable_extension(false))
+	local executable_path = M.get_built_executable_path()
 	local prebuilt_executable_path = get_plugin_root_path():joinpath("bin/im-switch" .. get_executable_extension(true))
 	if executable_path:exists() then
 		return executable_path:absolute()
