@@ -1,4 +1,5 @@
 local utils = require("im-switch.utils")
+local im = require("im-switch.im")
 
 local M = {}
 
@@ -45,7 +46,7 @@ function M.setup(opts)
 	if #opts.set_default_im_events > 0 then
 		vim.api.nvim_create_autocmd(opts.set_default_im_events, {
 			callback = function()
-				utils.ime_off(opts)
+				im.ime_off(opts)
 			end,
 			group = group_id,
 		})
@@ -54,7 +55,7 @@ function M.setup(opts)
 	if #opts.set_previous_im_events > 0 then
 		vim.api.nvim_create_autocmd(opts.set_previous_im_events, {
 			callback = function()
-				utils.restore_previous_im(opts)
+				im.restore_previous_im(opts)
 			end,
 			group = group_id,
 		})
@@ -63,7 +64,7 @@ function M.setup(opts)
 	if #opts.save_im_events > 0 then
 		vim.api.nvim_create_autocmd(opts.save_im_events, {
 			callback = function()
-				utils.save_im(opts)
+				im.save_im(opts)
 			end,
 			group = group_id,
 		})
