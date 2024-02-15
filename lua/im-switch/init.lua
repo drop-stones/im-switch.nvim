@@ -22,6 +22,11 @@ local function initialize_opts(opts)
     opts.save_im_events = default_opts.save_im_events
   end
 
+  if utils.get_os() == "linux" then
+    opts.linux.obtain_im_command = utils.concat(opts.linux.obtain_im_command)
+    opts.linux.set_im_command = utils.concat(opts.linux.set_im_command)
+  end
+
   return opts
 end
 

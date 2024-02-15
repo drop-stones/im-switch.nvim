@@ -63,4 +63,21 @@ function M.get_executable_path()
   end
 end
 
+function M.concat(list)
+  if type(list) == "table" then
+    local len = #list
+    if len == 0 then
+      return ""
+    end
+
+    local str = list[1]
+    for i = 2, len do
+      str = str .. " " .. list[i]
+    end
+    return str
+  else
+    return list
+  end
+end
+
 return M
