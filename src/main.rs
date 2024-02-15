@@ -80,7 +80,19 @@ mod test {
     use clap::CommandFactory;
 
     #[test]
-    fn activate_arg() {
+    fn test_args() {
+        Args::command().debug_assert()
+    }
+}
+
+#[cfg(target_os = "macos")]
+#[cfg(test)]
+mod test {
+    use super::*;
+    use clap::CommandFactory;
+
+    #[test]
+    fn test_args() {
         Args::command().debug_assert()
     }
 }
