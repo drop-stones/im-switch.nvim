@@ -1,5 +1,5 @@
 -- Run cargo in installation
-local utils = require("utils")
+local utils = require("im-switch.utils")
 
 local M = {}
 

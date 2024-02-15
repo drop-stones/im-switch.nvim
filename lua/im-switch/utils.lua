@@ -24,12 +24,12 @@ end
 
 -- get root path
 local function get_plugin_root_path()
-	local root_path = debug.getinfo(2, "S").source:sub(2)
+	local utils_path = debug.getinfo(2, "S").source:sub(2)
 	if M.get_os() == "windows" then
 		-- need to replace path delimiters due to bugs of plenary
-		root_path = string.gsub(root_path, "/", "\\")
+		utils_path = string.gsub(utils_path, "/", "\\")
 	end
-	return Path:new(root_path):parent():parent()
+	return Path:new(utils_path):parent():parent():parent()
 end
 
 -- get extension
