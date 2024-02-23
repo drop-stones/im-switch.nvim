@@ -7,6 +7,18 @@ local default_opts = {
   set_default_im_events = { "VimEnter", "FocusGained", "InsertLeave", "CmdlineLeave" },
   set_previous_im_events = { "InsertEnter" },
   save_im_events = { "InsertLeavePre" },
+
+  windows = {
+    enabled = false,
+  },
+
+  mac = {
+    enabled = false,
+  },
+
+  linux = {
+    enabled = false,
+  },
 }
 
 local function initialize_opts(opts)
@@ -20,6 +32,18 @@ local function initialize_opts(opts)
 
   if opts.save_im_events == nil then
     opts.save_im_events = default_opts.save_im_events
+  end
+
+  if opts.windows == nil or opts.windows.enabled == nil then
+    opts.windows = default_opts.windows
+  end
+
+  if opts.mac == nil or opts.mac.enabled == nil then
+    opts.mac = default_opts.mac
+  end
+
+  if opts.linux == nil or opts.linux.enabled == nil then
+    opts.linux = default_opts.linux
   end
 
   if utils.get_os() == "linux" then
@@ -38,9 +62,9 @@ function M.setup(opts)
 
   -- Check options for mac
   if
-    ((os == "wsl" or os == "windows") and (opts.windows == nil))
-    or ((os == "mac") and (opts.mac == nil))
-    or ((os == "linux") and (opts.linux == nil))
+    ((os == "wsl" or os == "windows") and (opts.windows.enabled == false))
+    or ((os == "mac") and opts.mac.enabled == false)
+    or ((os == "linux") and opts.linux.enabled == false)
   then
     return
   end
