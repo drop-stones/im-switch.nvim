@@ -56,24 +56,33 @@ Install the plugin with your preferred package manager.
   -- If you want to disable this behavior, set `save_im_events` and `set_previous_im_events` to empty.
   set_previous_im_events = { "InsertEnter" },
 
-  -- Enable this plugin on Windows.
-  -- If enabled, input method is inactivated when events in `set_default_im_events` are triggered.
-  -- And the previous state of input method is restored when events in `set_previous_im_events` are triggered.
-  -- By default, this plugin is disabled on Windows.
-  windows = true,
+  -- Options for windows
+  windows = {
+    -- Enable this plugin on Windows.
+    -- If enabled, input method is inactivated when events in `set_default_im_events` are triggered.
+    -- And the previous state of input method is restored when events in `set_previous_im_events` are triggered.
+    -- By default, the value is false.
+    enabled = true,
+  },
   
-  -- Enable this plugin on Mac.
-  -- The following settings is required to enable this plugin on Mac.
-  -- By default, this plugin is disabled on Mac.
+  -- Options for mac
   mac = {
+    -- Enable this plugin on Mac.
+    -- The following settings is required to enable this plugin on Mac.
+    -- By default, the value is false.
+    enabled = true,
+    
     -- The input method is set when events in `set_default_im_events` are triggered
     default_im = "com.apple.inputmethod.XXX",
   },
   
-  -- Enable this plugin on Linux.
-  -- The following settings is required to enable this plugin on Linux.
-  -- By default, this plugin is disabled on Linux.
+  -- Options for linux
   linux = {
+    -- Enable this plugin on Linux.
+    -- The following settings is required to enable this plugin on Linux.
+    -- By default, the value is false.
+    enabled = true,
+    
     -- The input method is set when events in `set_default_im_events` are triggered
     default_im = "keyboard-us",
 
