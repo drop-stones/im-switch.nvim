@@ -70,7 +70,7 @@ LAZY.NVIM ~
       -- By default, `InsertEnter` is registered.
       -- If you want to disable this behavior, set `save_im_events` and `set_previous_im_events` to empty.
       set_previous_im_events = { "InsertEnter" },
-      
+    
       -- Options for windows
       windows = {
         -- Enable this plugin on Windows.
