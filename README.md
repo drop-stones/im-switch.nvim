@@ -89,3 +89,64 @@ Install the plugin with your preferred package manager.
   },
 }
 ```
+
+### Examples
+
+#### Example 1
+
+- Restore the previous input method when transitioning to input mode
+  - Default behavior
+- Enable this plugin on Windows, Mac and Linux
+- Use `fcitx5-remote` to switch input methods on Linux
+
+```lua
+{
+  -- No event settings are required if default settings are used
+
+  windows = {
+    enabled = true,
+  },
+
+  mac = {
+    enabled = true,
+    default_im = "com.apple.keylayout.ABC", -- If you use Japanese, use "com.apple.inputmethod.Kotoeri.RomajiTyping.Roman" instead
+  },
+
+  linux = {
+    enabled = true,
+    default_im = "keyboard-us",
+    obtain_im_command = { "fcitx5-remote", "-n" },
+    set_im_command = { "fcitx5-remote", "-s" },
+  },
+}
+```
+
+#### Example 2
+
+- Always set the default input method when transitioning to input mode
+- Enable this plugin on Windows, Mac and Linux
+- Use `ibus` to switch input methods on Linux
+
+```lua
+{
+  -- Disable default behaviors to restore the previous input method
+  set_previous_im_events = {},
+  save_im_events = {},
+  
+  windows = {
+    enabled = true,
+  },
+
+  mac = {
+    enabled = true,
+    default_im = "com.apple.keylayout.ABC",
+  },
+
+  linux = {
+    enabled = true,
+    default_im = "xkb:us::eng",
+    obtain_im_command = { "ibus", "engine" },
+    set_im_command = { "ibus", "engine" },
+  },
+}
+```
