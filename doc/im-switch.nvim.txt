@@ -1,4 +1,4 @@
-*im-switch.nvim.txt*       For NVIM v0.8.0       Last change: 2024 February 29
+*im-switch.nvim.txt*          For NVIM v0.8.0         Last change: 2024 May 11
 
 ==============================================================================
 Table of Contents                           *im-switch.nvim-table-of-contents*
@@ -71,24 +71,33 @@ LAZY.NVIM ~
       -- If you want to disable this behavior, set `save_im_events` and `set_previous_im_events` to empty.
       set_previous_im_events = { "InsertEnter" },
     
-      -- Enable this plugin on Windows.
-      -- If enabled, input method is inactivated when events in `set_default_im_events` are triggered.
-      -- And the previous state of input method is restored when events in `set_previous_im_events` are triggered.
-      -- By default, this plugin is disabled on Windows.
-      windows = true,
+      -- Windows settings
+      windows = {
+        -- Enable this plugin on Windows.
+        -- If enabled, input method is inactivated when events in `set_default_im_events` are triggered.
+        -- And the previous state of input method is restored when events in `set_previous_im_events` are triggered.
+        -- By default, this plugin is disabled on Windows.
+        enabled = true,
+      };
       
-      -- Enable this plugin on Mac.
-      -- The following settings is required to enable this plugin on Mac.
-      -- By default, this plugin is disabled on Mac.
+      -- Mac settings
       mac = {
+        -- Enable this plugin on Mac.
+        -- The following settings is required to enable this plugin on Mac.
+        -- By default, this plugin is disabled on Mac.
+        enabled = true,
+    
         -- The input method is set when events in `set_default_im_events` are triggered
         default_im = "com.apple.inputmethod.XXX",
       },
       
-      -- Enable this plugin on Linux.
-      -- The following settings is required to enable this plugin on Linux.
-      -- By default, this plugin is disabled on Linux.
+      -- Linux settings
       linux = {
+        -- Enable this plugin on Linux.
+        -- The following settings is required to enable this plugin on Linux.
+        -- By default, this plugin is disabled on Linux.
+        enabled = true,
+    
         -- The input method is set when events in `set_default_im_events` are triggered
         default_im = "keyboard-us",
     
