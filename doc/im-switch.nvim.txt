@@ -1,4 +1,4 @@
-*im-switch.nvim.txt*          For NVIM v0.8.0         Last change: 2024 May 11
+*im-switch.nvim.txt*         For NVIM v0.8.0         Last change: 2024 July 11
 
 ==============================================================================
 Table of Contents                           *im-switch.nvim-table-of-contents*
