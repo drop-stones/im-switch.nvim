@@ -33,9 +33,17 @@ Table of Contents                           *im-switch.nvim-table-of-contents*
 Install the plugin with your preferred package manager.
 
 
-  [!NOTE] Windows/Mac
-  If `cargo` is installed, `im_switch` is built at installation. If not, the
+  [!NOTE] Windows/macOS
+  If `cargo` is installed, `im_switch` is built during installation. Otherwise, a
   pre-built binary is used.
+
+  [!WARNING]
+  The following binaries are pre-built. If you need a different binaries, install
+  `cargo` and build the plugin yourself.
+    OS        Architecture
+    --------- --------------
+    Windows   x86_64
+    macOS     arm64
 
 LAZY.NVIM ~
 
