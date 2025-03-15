@@ -18,10 +18,20 @@
 Install the plugin with your preferred package manager.
 
 > [!NOTE]
-> Windows/Mac
+> Windows/macOS
 >
-> If `cargo` is installed, `im_switch` is built at installation.
-> If not, the pre-built binary is used.
+> If `cargo` is installed, `im_switch` is built during installation.  
+> Otherwise, a pre-built binary is used.
+
+> [!WARNING]
+>
+> The following binaries are pre-built.  
+> If you need a different binaries, install `cargo` and build the plugin yourself.
+>
+> | OS      | Architecture |
+> | ------- | ------------ |
+> | Windows | x86_64       |
+> | macOS   | arm64        |
 
 ### [lazy.nvim](https://github.com/folke/lazy.nvim)
 
