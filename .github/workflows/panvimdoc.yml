@@ -1,17 +1,20 @@
 name: panvimdoc
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
 
 jobs:
-  docs:
+  panvimdoc:
     runs-on: ubuntu-latest
     name: pandoc to vimdoc
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - uses: kdheepak/panvimdoc@main
         with:
           vimdoc: im-switch.nvim
-      - uses: stefanzweifel/git-auto-commit-action@v4
+      - uses: actions/upload-artifact@v4
         with:
-          commit_message: "Auto generate docs"
-          branch: ${{ github.head_ref }}
+          name: vimdoc
+          path: doc/
