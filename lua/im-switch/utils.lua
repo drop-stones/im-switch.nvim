@@ -138,4 +138,17 @@ function M.concat(list)
   end
 end
 
+--- Split a string to string[]
+---@param str string|string[]
+---@return string[]
+function M.split(str)
+  if type(str) == "table" then
+    return str
+  elseif type(str) == "string" then
+    return vim.split(str, " ")
+  else
+    error("split() expected a string or string[], but got " .. type(str))
+  end
+end
+
 return M
