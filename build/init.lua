@@ -1,15 +1,20 @@
 -- Run cargo in installation
 local utils = require("im-switch.utils")
 
-local M = {}
-
-function M.build()
-  if utils.need_cargo_build() then
-    -- if os is darwin or windows, build im-switch
-    vim.fn.system({ "cargo", "build", "--release", "--manifest-path", utils.get_cargo_toml_path() })
-  end
+-- Skip build if cargo is not installed
+if vim.fn.executable("cargo") == 0 then
+  return
 end
 
-M.build()
+-- Skip build if not necessary
+if not utils.should_build_with_cargo() then
+  return
+end
 
-return M
+-- Build the im-switch binary
+-- stylua: ignore
+local result = vim.system({ "cargo", "build", "--release" }, { cwd = utils.get_plugin_root_path() }):wait()
+
+if result.code ~= 0 then
+  error("Cargo build failed: " .. result.stderr)
+end
