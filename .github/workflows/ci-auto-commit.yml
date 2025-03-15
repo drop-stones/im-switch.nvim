@@ -6,6 +6,28 @@ on:
       - main
 
 jobs:
+  build:
+    strategy:
+      matrix:
+        os:
+          - windows-latest
+          - macos-latest
+    runs-on: ${{ matrix.os }}
+    name: build im-switch on ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release
+      - name: Rename binary for macOS
+        if: runner.os == 'macOS'
+        run: mv target/release/im-switch target/release/im-switch.bin
+      - uses: actions/upload-artifact@v4
+        with:
+          name: im-switch-${{ runner.os }}
+          path: |
+            target/release/im-switch.exe
+            target/release/im-switch.bin
+
   panvimdoc:
     runs-on: ubuntu-latest
     name: pandoc to vimdoc
@@ -13,7 +35,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: kdheepak/panvimdoc@main
         with:
-          vimdoc: im-switch.nvim
+          vimdoc: ${{ github.event.repository.name }}
       - uses: actions/upload-artifact@v4
         with:
           name: vimdoc
@@ -23,14 +45,23 @@ jobs:
     runs-on: ubuntu-latest
     name: auto commit
     needs:
+      - build
       - panvimdoc
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: im-switch-Windows
+          path: bin/
+      - uses: actions/download-artifact@v4
+        with:
+          name: im-switch-macOS
+          path: bin/
       - uses: actions/download-artifact@v4
         with:
           name: vimdoc
           path: doc/
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "Auto generate docs"
+          commit_message: "Auto generate docs/executables"
           branch: ${{ github.head_ref }}
