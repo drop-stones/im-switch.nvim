@@ -49,9 +49,33 @@ local function check_os_options()
   end
 end
 
+local function check_cargo_version()
+  local result = vim.system({ "cargo", "--version" }, { text = true }):wait()
+
+  if result.code ~= 0 then
+    vim.health.error("Cargo is not installed or not found in PATH")
+    return
+  end
+
+  local version = result.stdout:match("cargo%s+(%d+%.%d+%.%d+)")
+  if version then
+    local major, minor, patch = version:match("(%d+)%.(%d+)%.(%d+)")
+    major, minor, patch = tonumber(major), tonumber(minor), tonumber(patch)
+
+    if major > 1 or (major == 1 and minor >= 75) then
+      vim.health.ok("Cargo version: " .. version)
+    else
+      vim.health.warn("Cargo version is outdated: " .. version .. " (1.75.0+ recommended)")
+    end
+  else
+    vim.health.warn("Cargo is installed but version could not be determined")
+  end
+end
+
 --- Check the availability of the im-switch binary
 local function check_binary()
-  if utils.should_build_with_cargo() and utils.executable("cargo") then
+  if utils.should_build_with_cargo() and (vim.fn.executable("cargo") == 1) then
+    check_cargo_version()
 
     if utils.get_built_executable_path():exists() then
       vim.health.ok("im-switch is built correctly")
