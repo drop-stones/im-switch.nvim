@@ -7,22 +7,18 @@ local Path = require("plenary.path")
 --- Detect the current operating system
 ---@return string
 local function detect_os()
-  local os_map = {
-    wsl = "wsl",
-    win32 = "windows",
-    win64 = "windows",
-    mac = "mac",
-    linux = "linux",
-  }
-
-  for feature, os_name in pairs(os_map) do
-    if vim.fn.has(feature) == 1 then
-      return os_name
-    end
+  if vim.fn.has("wsl") == 1 then
+    return "wsl"
+  elseif vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1 then
+    return "windows"
+  elseif vim.fn.has("mac") == 1 then
+    return "mac"
+  elseif vim.fn.has("linux") == 1 then
+    return "linux"
+  else
+    vim.api.nvim_err_writeln("Unsupported OS")
+    error("Unsupported OS")
   end
-
-  vim.api.nvim_err_writeln("Unsupported OS")
-  error("Unsupported OS")
 end
 
 --- Get the root path of the plugin using git
@@ -33,7 +29,7 @@ local function get_plugin_root_path()
   local result = vim.system({ "git", "rev-parse", "--show-toplevel" }, { text = true, cwd = path }):wait()
 
   if result.code ~= 0 then
-    vim.api.nvim_err_writeln("Git command failed in directory: " .. script_path())
+    vim.api.nvim_err_writeln("Git command failed in directory: " .. path)
     vim.api.nvim_err_writeln("Error: " .. result.stderr)
     error("Unable to determine plugin root path")
   end
