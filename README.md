@@ -10,7 +10,7 @@
 
 ## ⚡️ Requirements
 
-- Neovim >= **0.9.0**
+- Neovim >= **0.10.0**
 - cargo >= **1.75.0** **_(optional)_**
 
 ## 📦 Installation
