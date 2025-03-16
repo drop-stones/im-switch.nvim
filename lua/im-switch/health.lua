@@ -72,8 +72,21 @@ local function check_cargo_version()
   end
 end
 
+--- Extracts the command name from a given input
+---@param command string|string[]|nil
+---@return string|nil
+local function get_command(command)
+  if type(command) == "string" then
+    return vim.split(command, " ")[1]
+  elseif type(command) == "table" and #command > 0 then
+    return command[1]
+  end
+  return nil
+end
+
 --- Check the availability of the im-switch binary
 local function check_binary()
+  local os = utils.detect_os()
   if utils.should_build_with_cargo() and (vim.fn.executable("cargo") == 1) then
     check_cargo_version()
 
@@ -82,8 +95,23 @@ local function check_binary()
     else
       vim.health.error("im-switch is not built correctly")
     end
+  elseif os == "linux" then
+    local commands = {} -- set to store unique command names
+    for _, key in ipairs({ "obtain_im_command", "set_im_command" }) do
+      local command = get_command(opts.linux[key])
+      if not command then
+        vim.health.error("Invalid command format of " .. key)
+      elseif not commands[command] then
+        commands[command] = true
+        if vim.fn.executable(command) == 0 then
+          vim.health.error(command .. " is not executable")
+        else
+          vim.health.ok(command .. " is executable")
+        end
+      end
+    end
   else
-    local os, arch = utils.detect_os(), jit.arch
+    local arch = jit.arch
     if ((os == "windows" or os == "wsl") and arch == "x64") or (os == "mac" and arch == "arm64") then
       vim.health.ok("Prebuilt binary is used: " .. utils.get_prebuilt_executable_path())
     else
