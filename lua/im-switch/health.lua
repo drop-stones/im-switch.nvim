@@ -1,6 +1,15 @@
 local opts = require("im-switch").opts
 local utils = require("im-switch.utils")
 
+local function check_nvim_version()
+  local version = vim.version()
+  local nvim_version = string.format("%d.%d.%d", version.major, version.minor, version.patch)
+  if version.major > 0 or version.minor >= 10 then
+    vim.health.ok("Neovim version: " .. nvim_version)
+  else
+    vim.health.warn("Neovim version is outdated: " .. nvim_version .. " (0.10+ recommended)")
+  end
+end
 
 --- Reports plugin status based on OS-specific options
 local function check_os_options()
@@ -63,6 +72,7 @@ return {
   check = function()
     vim.health.start("im-switch.nvim")
 
+    check_nvim_version()
 
     if not opts then
       vim.health.error("Plugin options are missing!")
