@@ -1,3 +1,4 @@
+use std::error::Error;
 use windows::Win32::{
   Foundation::*,
   UI::{Input::Ime::*, WindowsAndMessaging::*},
@@ -6,33 +7,42 @@ use windows::Win32::{
 const IMC_GETOPENSTATUS: WPARAM = WPARAM(5);
 const IMC_SETOPENSTATUS: WPARAM = WPARAM(6);
 
-unsafe fn get_ime() -> HWND {
-  let hwnd: HWND = GetForegroundWindow();
-  assert!(!hwnd.is_invalid(), "Error: GetForegroundWindow failed");
-  let ime: HWND = ImmGetDefaultIMEWnd(hwnd);
-  assert!(!ime.is_invalid(), "Error: ImmGetDefaultIMEWnd failed");
-  ime
-}
-
-unsafe fn set_ime(status: LPARAM) {
-  let ime = get_ime();
-  SendMessageA(ime, WM_IME_CONTROL, IMC_SETOPENSTATUS, status);
-}
-
-pub unsafe fn get_input_method() -> &'static str {
-  let ime = get_ime();
-  match SendMessageA(ime, WM_IME_CONTROL, IMC_GETOPENSTATUS, LPARAM(0)) {
-    LRESULT { 0: 0 } => "off",
-    _ => "on",
+fn get_ime() -> Result<HWND, Box<dyn Error>> {
+  unsafe {
+    let hwnd: HWND = GetForegroundWindow();
+    if hwnd.is_invalid() {
+      return Err("Error: GetForegroundWindow failed".into());
+    }
+    let ime: HWND = ImmGetDefaultIMEWnd(hwnd);
+    if ime.is_invalid() {
+      return Err("Error: ImmGetDefaultIMEWnd failed".into());
+    }
+    Ok(ime)
   }
 }
 
-pub unsafe fn activate_im() {
-  set_ime(LPARAM(1));
+fn set_ime(status: LPARAM) -> Result<(), Box<dyn Error>> {
+  let ime = get_ime()?;
+  unsafe { SendMessageA(ime, WM_IME_CONTROL, IMC_SETOPENSTATUS, status) };
+  Ok(())
 }
 
-pub unsafe fn inactivate_im() {
-  set_ime(LPARAM(0));
+pub fn get_input_method() -> Result<&'static str, Box<dyn Error>> {
+  let ime = get_ime()?;
+  let status = unsafe { SendMessageA(ime, WM_IME_CONTROL, IMC_GETOPENSTATUS, LPARAM(0)) };
+
+  Ok(match status.0 {
+    0 => "off",
+    _ => "on",
+  })
+}
+
+pub fn activate_im() -> Result<(), Box<dyn Error>> {
+  set_ime(LPARAM(1))
+}
+
+pub fn inactivate_im() -> Result<(), Box<dyn Error>> {
+  set_ime(LPARAM(0))
 }
 
 #[cfg(test)]

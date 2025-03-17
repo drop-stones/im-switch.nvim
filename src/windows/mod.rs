@@ -4,20 +4,23 @@ mod im;
 use args::Args;
 use clap::{CommandFactory, Parser};
 use im::*;
+use std::error::Error;
 
-pub fn run() {
+pub fn run() -> Result<(), Box<dyn Error>> {
   let args: Args = Args::parse();
 
   if args.activate {
-    unsafe { activate_im() };
+    activate_im()?;
   } else if args.inactivate {
-    unsafe { inactivate_im() };
+    inactivate_im()?;
   } else if args.get {
-    unsafe { println!("{}", get_input_method()) };
+    println!("{}", get_input_method()?);
   } else {
     let mut cmd = Args::command();
-    cmd.print_help().unwrap();
+    cmd.print_help()?;
   }
+
+  Ok(())
 }
 
 // Tests

@@ -9,5 +9,8 @@ mod macos;
 use macos::run;
 
 fn main() {
-  run();
+  if let Err(e) = run() {
+    eprintln!("Error: {}", e);
+    std::process::exit(1);
+  }
 }
