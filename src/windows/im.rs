@@ -48,24 +48,25 @@ pub fn inactivate_im() -> Result<(), Box<dyn Error>> {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use serial_test::serial;
 
-  #[test]
-  #[serial]
-  fn test_activate_im() {
-    unsafe { activate_im() };
-    let current_im = unsafe { get_input_method() };
+  fn check_activate_im() -> Result<(), Box<dyn Error>> {
+    activate_im()?;
+    let current_im = get_input_method()?;
     assert_eq!(current_im, "on");
+    Ok(())
+  }
 
-    // restore default im
-    unsafe { inactivate_im() };
+  fn check_inactivate_im() -> Result<(), Box<dyn Error>> {
+    inactivate_im()?;
+    let current_im = get_input_method()?;
+    assert_eq!(current_im, "off");
+    Ok(())
   }
 
   #[test]
-  #[serial]
-  fn test_inactivate_im() {
-    unsafe { inactivate_im() };
-    let current_im = unsafe { get_input_method() };
-    assert_eq!(current_im, "off");
+  fn test_im_switch() -> Result<(), Box<dyn Error>> {
+    check_activate_im()?;
+    check_inactivate_im()?;
+    Ok(())
   }
 }

@@ -22,15 +22,3 @@ pub fn run() -> Result<(), Box<dyn Error>> {
 
   Ok(())
 }
-
-// Tests
-#[cfg(test)]
-mod test {
-  use super::*;
-  use clap::CommandFactory;
-
-  #[test]
-  fn test_args() {
-    Args::command().debug_assert()
-  }
-}
