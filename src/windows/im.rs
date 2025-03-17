@@ -8,9 +8,9 @@ const IMC_SETOPENSTATUS: WPARAM = WPARAM(6);
 
 unsafe fn get_ime() -> HWND {
   let hwnd: HWND = GetForegroundWindow();
-  assert_ne!(hwnd, HWND(0), "Error: GetForegroundWindow failed");
+  assert!(!hwnd.is_invalid(), "Error: GetForegroundWindow failed");
   let ime: HWND = ImmGetDefaultIMEWnd(hwnd);
-  assert_ne!(ime, HWND(0), "Error: ImmGetDefaultIMEWnd failed");
+  assert!(!ime.is_invalid(), "Error: ImmGetDefaultIMEWnd failed");
   ime
 }
 
