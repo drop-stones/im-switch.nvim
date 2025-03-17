@@ -9,5 +9,5 @@ mod macos;
 use macos::run;
 
 fn main() {
-    run();
+  run();
 }

@@ -6,28 +6,28 @@ use clap::{CommandFactory, Parser};
 use im::*;
 
 pub fn run() {
-    let args: Args = Args::parse();
+  let args: Args = Args::parse();
 
-    if args.activate {
-        unsafe { activate_im() };
-    } else if args.inactivate {
-        unsafe { inactivate_im() };
-    } else if args.get {
-        unsafe { println!("{}", get_input_method()) };
-    } else {
-        let mut cmd = Args::command();
-        cmd.print_help().unwrap();
-    }
+  if args.activate {
+    unsafe { activate_im() };
+  } else if args.inactivate {
+    unsafe { inactivate_im() };
+  } else if args.get {
+    unsafe { println!("{}", get_input_method()) };
+  } else {
+    let mut cmd = Args::command();
+    cmd.print_help().unwrap();
+  }
 }
 
 // Tests
 #[cfg(test)]
 mod test {
-    use super::*;
-    use clap::CommandFactory;
+  use super::*;
+  use clap::CommandFactory;
 
-    #[test]
-    fn test_args() {
-        Args::command().debug_assert()
-    }
+  #[test]
+  fn test_args() {
+    Args::command().debug_assert()
+  }
 }

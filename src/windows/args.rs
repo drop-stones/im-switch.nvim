@@ -4,15 +4,15 @@ use clap::Parser;
 #[command(version, about, long_about = None)]
 #[group(multiple = false)]
 pub struct Args {
-    /// Activate input method
-    #[arg(short, long)]
-    pub activate: bool,
+  /// Activate input method
+  #[arg(short, long)]
+  pub activate: bool,
 
-    /// Inactivate input method
-    #[arg(short, long)]
-    pub inactivate: bool,
+  /// Inactivate input method
+  #[arg(short, long)]
+  pub inactivate: bool,
 
-    /// Get current input method ("on" or "off")
-    #[arg(short, long)]
-    pub get: bool,
+  /// Get current input method ("on" or "off")
+  #[arg(short, long)]
+  pub get: bool,
 }

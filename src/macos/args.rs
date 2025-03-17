@@ -4,11 +4,11 @@ use clap::Parser;
 #[command(version, about, long_about = None)]
 #[group(multiple = false)]
 pub struct Args {
-    /// Set input method
-    #[arg(short, long)]
-    pub set: Option<String>,
+  /// Set input method
+  #[arg(short, long)]
+  pub set: Option<String>,
 
-    /// Get current input method
-    #[arg(short, long)]
-    pub get: bool,
+  /// Get current input method
+  #[arg(short, long)]
+  pub get: bool,
 }
