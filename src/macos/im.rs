@@ -1,28 +1,28 @@
-use icrate::{
-  AppKit::{NSTextInputClient, NSTextInputContext, NSTextInputSourceIdentifier, NSTextView},
-  Foundation::{MainThreadMarker, NSString},
-};
 use libc::c_char;
 use objc2::{
-  rc::{Allocated, Id},
+  rc::{Allocated, Retained},
   runtime::ProtocolObject,
 };
+use objc2_app_kit::{
+  NSTextInputClient, NSTextInputContext, NSTextInputSourceIdentifier, NSTextView,
+};
+use objc2_foundation::{MainThreadMarker, NSString};
 use std::{ffi::CStr, ops::Deref, str};
 
-pub unsafe fn create_input_context() -> Id<NSTextInputContext> {
+pub unsafe fn create_input_context() -> Retained<NSTextInputContext> {
   let mtm: MainThreadMarker = MainThreadMarker::new().expect("must be on the main thread");
-  let text_view: Id<NSTextView> = NSTextView::new(mtm);
+  let text_view: Retained<NSTextView> = NSTextView::new(mtm);
   let input_protocol: &ProtocolObject<dyn NSTextInputClient> =
     ProtocolObject::from_ref(&*text_view);
   let input_context: Allocated<NSTextInputContext> = mtm.alloc::<NSTextInputContext>();
-  let input_context: Id<NSTextInputContext> =
+  let input_context: Retained<NSTextInputContext> =
     NSTextInputContext::initWithClient(input_context, input_protocol);
   input_context
 }
 
 pub unsafe fn get_input_method() -> &'static str {
   let input_context = create_input_context();
-  let input_method: *mut c_char = input_context
+  let input_method: *const c_char = input_context
     .selectedKeyboardInputSource()
     .unwrap()
     .deref()
@@ -33,7 +33,7 @@ pub unsafe fn get_input_method() -> &'static str {
 
 pub unsafe fn set_input_method(locale: &str) {
   let input_context = create_input_context();
-  let locale: Id<NSTextInputSourceIdentifier> = NSString::from_str(locale);
+  let locale: Retained<NSTextInputSourceIdentifier> = NSString::from_str(locale);
   let locale: Option<&NSTextInputSourceIdentifier> = Some(locale.deref());
   input_context.setSelectedKeyboardInputSource(locale)
 }
