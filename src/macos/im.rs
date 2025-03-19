@@ -1,23 +1,17 @@
 use libc::c_char;
-use objc2::rc::{Allocated, Retained};
-use objc2::runtime::ProtocolObject;
-use objc2_app_kit::{
-  NSTextInputClient, NSTextInputContext, NSTextInputSourceIdentifier, NSTextView,
-};
+use objc2::rc::Retained;
+use objc2_app_kit::{NSTextInputContext, NSTextInputSourceIdentifier};
 use objc2_foundation::{MainThreadMarker, NSString};
 use std::error::Error;
 use std::{ffi::CStr, ops::Deref, str};
 
-pub fn create_input_context() -> Result<Retained<NSTextInputContext>, Box<dyn Error>> {
-  let mtm: MainThreadMarker =
-    MainThreadMarker::new().ok_or_else(|| "must be on the main thread".to_string())?;
-  let text_view: Retained<NSTextView> = unsafe { NSTextView::new(mtm) };
-  let input_protocol: &ProtocolObject<dyn NSTextInputClient> =
-    ProtocolObject::from_ref(&*text_view);
-  let input_context: Allocated<NSTextInputContext> = mtm.alloc::<NSTextInputContext>();
-  let input_context: Retained<NSTextInputContext> =
-    unsafe { NSTextInputContext::initWithClient(input_context, input_protocol) };
-  Ok(input_context)
+// Creates and returns the current input context on the main thread.
+fn create_input_context() -> Result<Retained<NSTextInputContext>, Box<dyn Error>> {
+  let main_thread_marker: MainThreadMarker =
+    MainThreadMarker::new().ok_or_else(|| "Must be on the main thread".to_string())?;
+  let current_input_context: Retained<NSTextInputContext> =
+    unsafe { NSTextInputContext::new(main_thread_marker) };
+  Ok(current_input_context)
 }
 
 // Returns a list of available input methods
@@ -46,19 +40,24 @@ pub fn is_input_method_available(input_method: &str) -> Result<bool, Box<dyn Err
   Ok(available_input_methods.contains(&input_method))
 }
 
+// Retrieves the currently selected input method
 pub fn get_input_method() -> Result<&'static str, Box<dyn Error>> {
   let input_context: Retained<NSTextInputContext> = create_input_context()?;
-  let input_method: *const c_char = input_context
+  let input_method_ptr: *const c_char = input_context
     .selectedKeyboardInputSource()
     .ok_or_else(|| "Failed to get input method".to_string())?
     .deref()
     .UTF8String();
-  let input_method: &CStr = unsafe { CStr::from_ptr(input_method) };
-  let input_method: &'static str = input_method.to_str().map_err(|e| e.to_string())?;
-  Ok(input_method)
+
+  let input_method_str: &str = unsafe { CStr::from_ptr(input_method_ptr) }
+    .to_str()
+    .map_err(|e| e.to_string())?;
+
+  Ok(input_method_str)
 }
 
-pub fn set_input_method(locale: &str) -> Result<(), Box<dyn Error>> {
+// Sets the input method for a specific input method
+pub fn set_input_method(input_method: &str) -> Result<(), Box<dyn Error>> {
   // Check if the specified input method is available
   if !is_input_method_available(input_method)? {
     return Err(Box::from(format!(
@@ -73,8 +72,13 @@ pub fn set_input_method(locale: &str) -> Result<(), Box<dyn Error>> {
   }
 
   let input_context: Retained<NSTextInputContext> = create_input_context()?;
-  let locale: Retained<NSTextInputSourceIdentifier> = NSString::from_str(locale);
-  let locale: Option<&NSTextInputSourceIdentifier> = Some(locale.deref());
-  unsafe { input_context.setSelectedKeyboardInputSource(locale) };
+  let input_method_identifier: Retained<NSTextInputSourceIdentifier> =
+    NSString::from_str(input_method);
+  let input_method_ref: Option<&NSTextInputSourceIdentifier> =
+    Some(input_method_identifier.deref());
+
+  // Set the selected keyboard input source to the input method
+  unsafe { input_context.setSelectedKeyboardInputSource(input_method_ref) };
+
   Ok(())
 }
