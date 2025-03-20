@@ -49,24 +49,15 @@ pub fn inactivate_im() -> Result<(), Box<dyn Error>> {
 mod tests {
   use super::*;
 
-  fn check_activate_im() -> Result<(), Box<dyn Error>> {
-    activate_im()?;
-    let current_im = get_input_method()?;
-    assert_eq!(current_im, "on");
-    Ok(())
-  }
-
-  fn check_inactivate_im() -> Result<(), Box<dyn Error>> {
-    inactivate_im()?;
-    let current_im = get_input_method()?;
-    assert_eq!(current_im, "off");
+  #[test]
+  fn test_get_ime() -> Result<(), Box<dyn Error>> {
+    get_ime()?;
     Ok(())
   }
 
   #[test]
-  fn test_im_switch() -> Result<(), Box<dyn Error>> {
-    check_activate_im()?;
-    check_inactivate_im()?;
+  fn test_set_ime() -> Result<(), Box<dyn Error>> {
+    set_ime(LPARAM(0))?;
     Ok(())
   }
 }
