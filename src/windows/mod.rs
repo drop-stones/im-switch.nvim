@@ -1,5 +1,5 @@
 mod args;
-mod im;
+pub mod im;
 
 use args::Args;
 use clap::{CommandFactory, Parser};
