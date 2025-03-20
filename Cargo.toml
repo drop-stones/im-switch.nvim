@@ -24,3 +24,4 @@ objc2-app-kit = { version = "0.3", features = [
 
 [dependencies]
 clap = { version = "4.5", features = ["derive"] }
+libtest-mimic = "0.8"
