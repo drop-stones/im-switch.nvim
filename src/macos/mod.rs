@@ -1,9 +1,9 @@
 mod args;
-pub mod im;
+pub mod input_method;
 
 use args::Args;
 use clap::{CommandFactory, Parser};
-use im::*;
+use input_method::*;
 use std::error::Error;
 
 pub fn run() -> Result<(), Box<dyn Error>> {
