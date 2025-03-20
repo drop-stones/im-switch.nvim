@@ -6,11 +6,11 @@ use clap::Parser;
 pub struct Args {
   /// Activate input method
   #[arg(short, long)]
-  pub activate: bool,
+  pub enable: bool,
 
   /// Inactivate input method
   #[arg(short, long)]
-  pub inactivate: bool,
+  pub disable: bool,
 
   /// Get current input method ("on" or "off")
   #[arg(short, long)]

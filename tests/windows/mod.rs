@@ -11,11 +11,11 @@ pub fn run(args: Arguments) -> std::process::ExitCode {
 
 fn get_tests() -> Vec<Trial> {
   vec![
-    Trial::test("test_activate_im", || {
-      test_activate_im().map_err(|e| Failed::from(e.to_string()))
+    Trial::test("test_enable_im", || {
+      test_enable_im().map_err(|e| Failed::from(e.to_string()))
     }),
-    Trial::test("test_inactivate_im", || {
-      test_inactivate_im().map_err(|e| Failed::from(e.to_string()))
+    Trial::test("test_disable_im", || {
+      test_disable_im().map_err(|e| Failed::from(e.to_string()))
     }),
   ]
 }

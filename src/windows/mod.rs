@@ -1,20 +1,20 @@
 mod args;
-pub mod im;
+pub mod input_method;
 
 use args::Args;
 use clap::{CommandFactory, Parser};
-use im::*;
+use input_method::*;
 use std::error::Error;
 
 pub fn run() -> Result<(), Box<dyn Error>> {
   let args: Args = Args::parse();
 
-  if args.activate {
-    activate_im()?;
-  } else if args.inactivate {
-    inactivate_im()?;
+  if args.enable {
+    enable_im()?;
+  } else if args.disable {
+    disable_im()?;
   } else if args.get {
-    println!("{}", get_input_method()?);
+    println!("{}", get_im_state()?);
   } else {
     let mut cmd = Args::command();
     cmd.print_help()?;

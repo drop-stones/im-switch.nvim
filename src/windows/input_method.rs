@@ -7,7 +7,7 @@ use windows::Win32::{
 const IMC_GETOPENSTATUS: WPARAM = WPARAM(5);
 const IMC_SETOPENSTATUS: WPARAM = WPARAM(6);
 
-fn get_ime() -> Result<HWND, Box<dyn Error>> {
+fn get_im_window() -> Result<HWND, Box<dyn Error>> {
   unsafe {
     let hwnd: HWND = GetForegroundWindow();
     if hwnd.is_invalid() {
@@ -21,14 +21,14 @@ fn get_ime() -> Result<HWND, Box<dyn Error>> {
   }
 }
 
-fn set_ime(status: LPARAM) -> Result<(), Box<dyn Error>> {
-  let ime = get_ime()?;
+fn set_im_state(status: LPARAM) -> Result<(), Box<dyn Error>> {
+  let ime = get_im_window()?;
   unsafe { SendMessageA(ime, WM_IME_CONTROL, IMC_SETOPENSTATUS, status) };
   Ok(())
 }
 
-pub fn get_input_method() -> Result<&'static str, Box<dyn Error>> {
-  let ime = get_ime()?;
+pub fn get_im_state() -> Result<&'static str, Box<dyn Error>> {
+  let ime = get_im_window()?;
   let status = unsafe { SendMessageA(ime, WM_IME_CONTROL, IMC_GETOPENSTATUS, LPARAM(0)) };
 
   Ok(match status.0 {
@@ -37,12 +37,12 @@ pub fn get_input_method() -> Result<&'static str, Box<dyn Error>> {
   })
 }
 
-pub fn activate_im() -> Result<(), Box<dyn Error>> {
-  set_ime(LPARAM(1))
+pub fn enable_im() -> Result<(), Box<dyn Error>> {
+  set_im_state(LPARAM(1))
 }
 
-pub fn inactivate_im() -> Result<(), Box<dyn Error>> {
-  set_ime(LPARAM(0))
+pub fn disable_im() -> Result<(), Box<dyn Error>> {
+  set_im_state(LPARAM(0))
 }
 
 #[cfg(test)]
@@ -50,14 +50,14 @@ mod tests {
   use super::*;
 
   #[test]
-  fn test_get_ime() -> Result<(), Box<dyn Error>> {
-    get_ime()?;
+  fn test_get_im_window() -> Result<(), Box<dyn Error>> {
+    get_im_window()?;
     Ok(())
   }
 
   #[test]
-  fn test_set_ime() -> Result<(), Box<dyn Error>> {
-    set_ime(LPARAM(0))?;
+  fn test_set_im_state() -> Result<(), Box<dyn Error>> {
+    set_im_state(LPARAM(0))?;
     Ok(())
   }
 }
