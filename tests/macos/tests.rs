@@ -1,4 +1,4 @@
-use crate::common::warning_collector::WarningCollector;
+use crate::macos::WarningCollector;
 use im_switch::macos::input_method::*;
 use std::error::Error;
 
