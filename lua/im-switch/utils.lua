@@ -99,25 +99,6 @@ function M.get_executable_path()
     return executable_path:absolute()
   end
 
-  if M.detect_os() == "wsl" then -- FIXME: Workaround for WSL users
-    -- Get windows %TEMP% path and convert to WSL path
-    local temp_windows_path = vim.trim(vim.system({ "cmd.exe", "/c", "echo %TEMP%" }, { text = true }):wait().stdout)
-    local temp_wsl_path = vim.trim(vim.system({ "wslpath", "-au", temp_windows_path }, { text = true }):wait().stdout)
-
-    local executable_path_in_temp = temp_wsl_path .. "/im-switch" .. get_executable_extension(true)
-    local path = Path:new(executable_path_in_temp)
-
-    if not path:exists() then
-      -- Copy the prebuilt executable to the %TEMP% directory to speed up execution
-      local result = vim.system({ "cp", prebuilt_executable_path, temp_wsl_path }):wait()
-      if result.code ~= 0 then
-        error("Failed to copy prebuilt executable to %TEMP%: " .. result.stderr)
-      end
-    end
-
-    return executable_path_in_temp
-  end
-
   return prebuilt_executable_path
 end
 
