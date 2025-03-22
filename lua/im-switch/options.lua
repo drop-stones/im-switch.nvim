@@ -119,25 +119,26 @@ function M.initialize_opts(opts)
   return vim.tbl_extend("force", default_opts, opts)
 end
 
---- Check if the plugin is enabled and all required settings are properly configured
----@param opts PluginOptions
+--- Check if the plugin is enabled and all required settings are properly configured.
+--- This function is called before initialize_opts(), so opts.windows/opts.macos/opts.linux maybe nil.
+---@param user_opts PluginOptions
 ---@return boolean
-function M.is_plugin_configured(opts)
+function M.is_plugin_configured(user_opts)
   local os = utils.detect_os()
 
   if os == "wsl" or os == "windows" then
-    return opts.windows.enabled
+    return user_opts.windows and user_opts.windows.enabled
   elseif os == "macos" then
-    if opts.macos.enabled and not opts.macos.default_im then
+    if user_opts.macos and user_opts.macos.enabled and not user_opts.macos.default_im then
       error("The 'macos.default_im' field must be defined when macos plugin is enabled")
       return false
     end
-    return opts.macos.enabled
+    return user_opts.macos and user_opts.macos.enabled
   elseif os == "linux" then
-    if opts.linux.enabled then
+    if user_opts.linux and user_opts.linux.enabled then
       local required_fields = { "default_im", "get_im_command", "set_im_command" }
       for _, field in ipairs(required_fields) do
-        if not opts.linux[field] then
+        if not user_opts.linux[field] then
           error(string.format("The 'linux.%s' field must be defined when linux plugin is enabled", field))
           return false
         end
