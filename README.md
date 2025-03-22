@@ -72,13 +72,13 @@ Expand to see the list of all the default options below.
 ```lua
 {
   -- Events that set the default input method.
-  set_default_im_events = { "VimEnter", "FocusGained", "InsertLeave", "CmdlineLeave" },
+  default_im_events = { "VimEnter", "FocusGained", "InsertLeave", "CmdlineLeave" },
 
   -- Events that save the current input method.
-  save_im_events = { "InsertLeavePre" },
+  save_im_state_events = { "InsertLeavePre" },
   
   -- Events that restore the previously saved input method.
-  set_previous_im_events = { "InsertEnter" },
+  restore_im_events = { "InsertEnter" },
 
   -- Windows settings
   windows = {
@@ -87,11 +87,11 @@ Expand to see the list of all the default options below.
   };
   
   -- macOS settings
-  mac = {
+  macos = {
     -- Enable or disable the plugin on macOS.
     enabled = false,
 
-    -- The input method set when `set_default_im_events` is triggered.
+    -- The input method set when `default_im_events` is triggered.
     default_im = "",
   },
   
@@ -100,13 +100,13 @@ Expand to see the list of all the default options below.
     -- Enable or disable the plugin on Linux.
     enabled = false,
 
-    -- The input method set when `set_default_im_events` is triggered.
+    -- The input method set when `default_im_events` is triggered.
     default_im = "",
 
-    -- The command used to get the current input method when `save_im_events` is triggered.
-    obtain_im_command = {},
+    -- The command used to get the current input method when `save_im_state_events` is triggered.
+    get_im_command = {},
 
-    -- The command used to set the input method when `set_default_im_events` or `set_previous_im_events` is triggered.
+    -- The command used to set the input method when `default_im_events` or `restore_im_events` is triggered.
     set_im_command = {},
   },
 }
@@ -119,29 +119,29 @@ Expand to see the list of all the default options below.
 
 ### 🔧 General Configuration
 
-#### `set_default_im_events`
+#### `default_im_events`
 
 Events that **set the default input method**.
 
 ```lua
-set_default_im_events = { "VimEnter", "FocusGained", "InsertLeave", "CmdlineLeave" }
+default_im_events = { "VimEnter", "FocusGained", "InsertLeave", "CmdlineLeave" }
 ```
 
-#### `save_im_events`
+#### `save_im_state_events`
 
 Events that **save the current input method**.<br />
-The saved input method is restored when `set_previous_im_events` is triggered.
+The saved input method is restored when `restore_im_events` is triggered.
 
 ```lua
-save_im_events = { "InsertLeavePre" },
+save_im_state_events = { "InsertLeavePre" },
 ```
 
-#### `set_previous_im_events`
+#### `restore_im_events`
 
 Events that **restore the previously saved input method**.
 
 ```lua
-set_previous_im_events = { "InsertEnter" },
+restore_im_events = { "InsertEnter" },
 ```
 
 > [!TIP]
@@ -150,9 +150,9 @@ set_previous_im_events = { "InsertEnter" },
 > To set the default input method when switching modes:
 >
 > ```lua
-> set_default_im_events = { "VimEnter", "InsertEnter", "FocusGained", "InsertLeave", "CmdlineLeave" },
-> save_im_events = {},
-> set_previous_im_events = {},
+> default_im_events = { "VimEnter", "InsertEnter", "FocusGained", "InsertLeave", "CmdlineLeave" },
+> save_im_state_events = {},
+> restore_im_events = {},
 > ```
 
 ### 🪟 Windows Configuration
@@ -169,22 +169,22 @@ windows = {
 
 ### 🍎 macOS Configuration
 
-#### `mac.enabled`
+#### `macos.enabled`
 
 Enable or disable the plugin on macOS.
 
 ```lua
-mac = {
+macos = {
   enabled = true,
 },
 ```
 
-#### `mac.default_im`
+#### `macos.default_im`
 
-The input method set when `set_default_im_events` is triggered.
+The input method set when `default_im_events` is triggered.
 
 ```lua
-mac = {
+macos = {
   default_im = "com.apple.keylayout.ABC",
 },
 ```
@@ -203,7 +203,7 @@ linux = {
 
 #### `linux.default_im`
 
-The input method set when `set_default_im_events` is triggered.
+The input method set when `default_im_events` is triggered.
 
 ```lua
 linux = {
@@ -211,19 +211,19 @@ linux = {
 },
 ```
 
-#### `linux.obtain_im_command`
+#### `linux.get_im_command`
 
-The command used to **get the current input method** when `save_im_events` is triggered.
+The command used to **get the current input method** when `save_im_state_events` is triggered.
 
 ```lua
 linux = {
-  obtain_im_command = { "fcitx5-remote", "-n" },
+  get_im_command = { "fcitx5-remote", "-n" },
 },
 ```
 
 #### `linux.set_im_command`
 
-The command used to **set the input method** when `set_default_im_events` or `set_previous_im_events` is triggered.
+The command used to **set the input method** when `default_im_events` or `restore_im_events` is triggered.
 
 ```lua
 linux = {
