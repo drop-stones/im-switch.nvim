@@ -11,10 +11,10 @@ local function get_current_im(opts)
   local os = utils.detect_os()
   local command
 
-  if os == "wsl" or os == "windows" or os == "mac" then
+  if os == "wsl" or os == "windows" or os == "macos" then
     command = { utils.get_executable_path(), "--get" }
   elseif os == "linux" then
-    command = utils.split(opts.linux.obtain_im_command)
+    command = utils.split(opts.linux.get_im_command)
   else
     error("Unsupported OS: " .. os)
   end
@@ -50,8 +50,8 @@ function M.ime_off(opts)
 
   if (os == "wsl") or (os == "windows") then
     result = vim.system({ utils.get_executable_path(), "--disable" }):wait()
-  elseif os == "mac" then
-    result = vim.system({ utils.get_executable_path(), "--set", opts.mac.default_im }):wait()
+  elseif os == "macos" then
+    result = vim.system({ utils.get_executable_path(), "--set", opts.macos.default_im }):wait()
   elseif os == "linux" then
     local command = utils.split(opts.linux.set_im_command)
     table.insert(command, opts.linux.default_im)
@@ -85,7 +85,7 @@ function M.restore_previous_im(opts)
     elseif previous_im == "off" then
       result = vim.system({ utils.get_executable_path(), "--disable" }):wait()
     end
-  elseif os == "mac" then
+  elseif os == "macos" then
     result = vim.system({ utils.get_executable_path(), "--set", previous_im }):wait()
   elseif os == "linux" then
     local command = utils.split(opts.linux.set_im_command)

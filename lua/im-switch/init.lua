@@ -16,9 +16,9 @@ function M.setup(opts)
   -- Create an autocommand group to manage the events
   local group_id = vim.api.nvim_create_augroup("im-switch", { clear = true })
 
-  -- Set up autocommand to disable IM when events in `set_default_im_events` are triggered
-  if #M.opts.set_default_im_events > 0 then
-    vim.api.nvim_create_autocmd(M.opts.set_default_im_events, {
+  -- Set up autocommand to set the default input method when `default_im_events` is triggered
+  if #M.opts.default_im_events > 0 then
+    vim.api.nvim_create_autocmd(M.opts.default_im_events, {
       callback = function()
         im.ime_off(M.opts)
       end,
@@ -26,9 +26,9 @@ function M.setup(opts)
     })
   end
 
-  -- Set up autocommand to restore previous IM when events in `set_previous_im_events` are triggered
-  if #M.opts.set_previous_im_events > 0 then
-    vim.api.nvim_create_autocmd(M.opts.set_previous_im_events, {
+  -- Set up autocommand to restore the previous input method when `restore_im_events` is triggered
+  if #M.opts.restore_im_events > 0 then
+    vim.api.nvim_create_autocmd(M.opts.restore_im_events, {
       callback = function()
         im.restore_previous_im(M.opts)
       end,
@@ -36,9 +36,9 @@ function M.setup(opts)
     })
   end
 
-  -- Set up autocommand to save the current IM when events in `save_im_events` are triggered
-  if #M.opts.save_im_events > 0 then
-    vim.api.nvim_create_autocmd(M.opts.save_im_events, {
+  -- Set up autocommand to save the current input method when `save_im_state_events` is triggered
+  if #M.opts.save_im_state_events > 0 then
+    vim.api.nvim_create_autocmd(M.opts.save_im_state_events, {
       callback = function()
         im.save_im(M.opts)
       end,

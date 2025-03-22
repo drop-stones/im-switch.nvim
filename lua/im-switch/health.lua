@@ -26,7 +26,7 @@ local function check_os_options()
 
   if platform_opts.enabled then
     vim.health.ok("Plugin is enabled")
-    if os == "mac" or os == "linux" then
+    if os == "macos" or os == "linux" then
       if type(platform_opts.default_im) == "string" then
         vim.health.ok("default_im is " .. platform_opts.default_im)
       else
@@ -34,7 +34,7 @@ local function check_os_options()
       end
     end
     if os == "linux" then
-      for _, key in ipairs({ "obtain_im_command", "set_im_command" }) do
+      for _, key in ipairs({ "get_im_command", "set_im_command" }) do
         if type(platform_opts[key]) == "table" then
           vim.health.ok(key .. " is " .. '"' .. utils.concat(platform_opts[key]) .. '"')
         elseif type(platform_opts[key]) == "string" then
@@ -97,7 +97,7 @@ local function check_binary()
     end
   elseif os == "linux" then
     local commands = {} -- set to store unique command names
-    for _, key in ipairs({ "obtain_im_command", "set_im_command" }) do
+    for _, key in ipairs({ "get_im_command", "set_im_command" }) do
       local command = get_command(opts.linux[key])
       if not command then
         vim.health.error("Invalid command format of " .. key)
@@ -112,7 +112,7 @@ local function check_binary()
     end
   else
     local arch = jit.arch
-    if ((os == "windows" or os == "wsl") and arch == "x64") or (os == "mac" and arch == "arm64") then
+    if ((os == "windows" or os == "wsl") and arch == "x64") or (os == "macos" and arch == "arm64") then
       vim.health.ok("Prebuilt binary is used: " .. utils.get_prebuilt_executable_path())
     else
       vim.health.error("Prebuilt binary is not supported on this OS/architecture")

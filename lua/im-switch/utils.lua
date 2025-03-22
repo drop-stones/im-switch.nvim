@@ -12,7 +12,7 @@ local function detect_os()
   elseif vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1 then
     return "windows"
   elseif vim.fn.has("mac") == 1 then
-    return "mac"
+    return "macos"
   elseif vim.fn.has("linux") == 1 then
     return "linux"
   else
@@ -46,7 +46,7 @@ local function get_executable_extension(is_prebuilt)
   local os = detect_os()
   if (os == "wsl") or (os == "windows") then
     return ".exe"
-  elseif os == "mac" then
+  elseif os == "macos" then
     if is_prebuilt == true then
       return ".bin"
     end
@@ -74,7 +74,7 @@ end
 --- @return boolean
 function M.should_build_with_cargo()
   local os = M.detect_os()
-  return (os == "mac") or (os == "windows")
+  return (os == "macos") or (os == "windows")
 end
 
 --- Get the built executable path in the release directory
