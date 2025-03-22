@@ -83,6 +83,21 @@ local function migrate_option(new, old, opts)
   end
 end
 
+--- Migrate a deprecated `string` to `string[]`
+---@param opts PluginOptions
+---@param os string
+---@param name string
+local function deprecate_string(opts, os, name)
+  if opts[os] ~= nil and type(opts[os][name]) == "string" then
+    vim.notify(
+      string.format("[im-switch.nvim] '%s.%s' as a string is deprecated. Use an array instead.", os, name),
+      vim.log.levels.WARN,
+      { title = "im-switch.nvim" }
+    )
+    opts[os][name] = utils.split(opts[os][name])
+  end
+end
+
 local M = {}
 
 --- Initialize plugin options
@@ -95,6 +110,10 @@ function M.initialize_opts(opts)
   migrate_option("restore_im_events", "set_previous_im_events", opts)
   migrate_option("save_im_state_events", "save_im_events", opts)
   migrate_option("get_im_command", "get_im_command", opts)
+
+  -- NOTE: Migration from string to string[]
+  deprecate_string(opts, "linux", "get_im_command")
+  deprecate_string(opts, "linux", "set_im_command")
 
   -- Extend the opts with default_opts, overwriting nil values in opts with default_opts
   return vim.tbl_extend("force", default_opts, opts)
