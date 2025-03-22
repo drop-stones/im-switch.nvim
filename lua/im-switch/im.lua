@@ -14,7 +14,7 @@ local function get_current_im(opts)
   if os == "wsl" or os == "windows" or os == "macos" then
     command = { utils.get_executable_path(), "--get" }
   elseif os == "linux" then
-    command = utils.split(opts.linux.get_im_command)
+    command = opts.linux.get_im_command
   else
     error("Unsupported OS: " .. os)
   end
@@ -53,7 +53,7 @@ function M.set_default_im(opts)
   elseif os == "macos" then
     result = vim.system({ utils.get_executable_path(), "--set", opts.macos.default_im }):wait()
   elseif os == "linux" then
-    local command = utils.split(opts.linux.set_im_command)
+    local command = vim.deepcopy(opts.linux.set_im_command)
     table.insert(command, opts.linux.default_im)
     result = vim.system(command):wait()
   else
@@ -89,7 +89,7 @@ function M.restore_im(opts)
   elseif os == "macos" then
     result = vim.system({ utils.get_executable_path(), "--set", previous_im_state }):wait()
   elseif os == "linux" then
-    local command = utils.split(opts.linux.set_im_command)
+    local command = vim.deepcopy(opts.linux.set_im_command)
     table.insert(command, previous_im_state)
     result = vim.system(command):wait()
   else
