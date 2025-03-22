@@ -7,23 +7,23 @@ local utils = require("im-switch.utils")
 --- macOS settings
 ---@class MacosSettings
 ---@field enabled boolean
----@field default_im? string
+---@field default_im string
 
 --- Linux settings
 ---@class LinuxSettings
 ---@field enabled boolean
----@field default_im? string
----@field get_im_command? string|string[]
----@field set_im_command? string|string[]
+---@field default_im string
+---@field get_im_command string[]
+---@field set_im_command string[]
 
 --- Plugin options
 ---@class PluginOptions
 ---@field default_im_events string[]
 ---@field save_im_state_events string[]
 ---@field restore_im_events string[]
----@field windows? WindowsSettings
----@field macos? MacosSettings
----@field linux? LinuxSettings
+---@field windows WindowsSettings
+---@field macos MacosSettings
+---@field linux LinuxSettings
 
 --- Default plugin options
 ---@type PluginOptions
@@ -83,6 +83,21 @@ local function migrate_option(new, old, opts)
   end
 end
 
+--- Migrate a deprecated `string` to `string[]`
+---@param opts PluginOptions
+---@param os string
+---@param name string
+local function deprecate_string(opts, os, name)
+  if opts[os] ~= nil and type(opts[os][name]) == "string" then
+    vim.notify(
+      string.format("[im-switch.nvim] '%s.%s' as a string is deprecated. Use an array instead.", os, name),
+      vim.log.levels.WARN,
+      { title = "im-switch.nvim" }
+    )
+    opts[os][name] = utils.split(opts[os][name])
+  end
+end
+
 local M = {}
 
 --- Initialize plugin options
@@ -96,29 +111,34 @@ function M.initialize_opts(opts)
   migrate_option("save_im_state_events", "save_im_events", opts)
   migrate_option("get_im_command", "get_im_command", opts)
 
+  -- NOTE: Migration from string to string[]
+  deprecate_string(opts, "linux", "get_im_command")
+  deprecate_string(opts, "linux", "set_im_command")
+
   -- Extend the opts with default_opts, overwriting nil values in opts with default_opts
   return vim.tbl_extend("force", default_opts, opts)
 end
 
---- Check if the plugin is enabled and all required settings are properly configured
----@param opts PluginOptions
+--- Check if the plugin is enabled and all required settings are properly configured.
+--- This function is called before initialize_opts(), so opts.windows/opts.macos/opts.linux maybe nil.
+---@param user_opts PluginOptions
 ---@return boolean
-function M.is_plugin_configured(opts)
+function M.is_plugin_configured(user_opts)
   local os = utils.detect_os()
 
   if os == "wsl" or os == "windows" then
-    return opts.windows.enabled
+    return user_opts.windows and user_opts.windows.enabled
   elseif os == "macos" then
-    if opts.macos.enabled and not opts.macos.default_im then
+    if user_opts.macos and user_opts.macos.enabled and not user_opts.macos.default_im then
       error("The 'macos.default_im' field must be defined when macos plugin is enabled")
       return false
     end
-    return opts.macos.enabled
+    return user_opts.macos and user_opts.macos.enabled
   elseif os == "linux" then
-    if opts.linux.enabled then
+    if user_opts.linux and user_opts.linux.enabled then
       local required_fields = { "default_im", "get_im_command", "set_im_command" }
       for _, field in ipairs(required_fields) do
-        if not opts.linux[field] then
+        if not user_opts.linux[field] then
           error(string.format("The 'linux.%s' field must be defined when linux plugin is enabled", field))
           return false
         end

@@ -3,15 +3,15 @@ local options = require("im-switch.options")
 
 local M = {}
 
----@param opts PluginOptions User options
-function M.setup(opts)
-  -- Initialize options
-  M.opts = options.initialize_opts(opts)
-
+---@param user_opts PluginOptions User options
+function M.setup(user_opts)
   -- If the plugin is not enabled for the current OS, exit early
-  if not options.is_plugin_configured(M.opts) then
+  if not options.is_plugin_configured(user_opts) then
     return
   end
+
+  -- Initialize options
+  M.opts = options.initialize_opts(user_opts)
 
   -- Create an autocommand group to manage the events
   local group_id = vim.api.nvim_create_augroup("im-switch", { clear = true })

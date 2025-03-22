@@ -37,8 +37,6 @@ local function check_os_options()
       for _, key in ipairs({ "get_im_command", "set_im_command" }) do
         if type(platform_opts[key]) == "table" then
           vim.health.ok(key .. " is " .. '"' .. utils.concat(platform_opts[key]) .. '"')
-        elseif type(platform_opts[key]) == "string" then
-          vim.health.ok(key .. " is " .. '"' .. platform_opts[key] .. '"')
         else
           vim.health.error(key .. " is not configured")
         end
@@ -73,12 +71,10 @@ local function check_cargo_version()
 end
 
 --- Extracts the command name from a given input
----@param command string|string[]|nil
+---@param command string[]|nil
 ---@return string|nil
 local function get_command(command)
-  if type(command) == "string" then
-    return vim.split(command, " ")[1]
-  elseif type(command) == "table" and #command > 0 then
+  if type(command) == "table" and #command > 0 then
     return command[1]
   end
   return nil
