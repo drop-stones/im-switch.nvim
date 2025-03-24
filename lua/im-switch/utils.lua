@@ -24,8 +24,7 @@ end
 --- Get the root path of the plugin using git
 ---@return Path the root path
 local function get_plugin_root_path()
-  -- stylua: ignore
-  local path = debug.getinfo(1, "S").source:sub(2):match("(.*/)") -- path to im-switch.nvim/lua/im-switch/
+  local path = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h") -- path to im-switch.nvim/lua/im-switch/
   local result = vim.system({ "git", "rev-parse", "--show-toplevel" }, { text = true, cwd = path }):wait()
 
   if result.code ~= 0 then
