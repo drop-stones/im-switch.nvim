@@ -145,9 +145,9 @@ restore_im_events = { "InsertEnter" },
 ```
 
 > [!TIP]
-> **Setting Default IM on Mode Change**
+> **Always Switch to Default IM on Mode Change**
 >
-> To set the default input method when entering normal mode:
+> To always switch to the default IM instead of restoring the previous one:
 >
 > ```lua
 > save_im_state_events = {},
