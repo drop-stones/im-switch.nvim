@@ -1,4 +1,4 @@
-*im-switch.nvim.txt*         For NVIM v0.8.0        Last change: 2025 March 22
+*im-switch.nvim.txt*         For NVIM v0.8.0        Last change: 2025 March 24
 
 ==============================================================================
 Table of Contents                           *im-switch.nvim-table-of-contents*
@@ -29,11 +29,16 @@ coding.
 
 ⚡️ REQUIREMENTS        *im-switch.nvim-im-switch.nvim-⚡️-requirements*
 
-  OS              Requirements
-  --------------- ------------------------------------------------
-  All OS          Neovim >= 0.10.0
-  Windows/macOS   cargo >= 1.75.0 (optional)
-  Linux           An input method framework (e.g., fcitx5, ibus)
+  -----------------------------------------------------------------------
+  OS                                   Requirements
+  ------------------------------------ ----------------------------------
+  All OS                               Neovim >= 0.10.0plenary.nvim
+
+  Windows/macOS                        cargo >= 1.75.0 (optional)
+
+  Linux                                An input method framework (e.g.,
+                                       fcitx5, ibus)
+  -----------------------------------------------------------------------
 
 📦 INSTALLATION            *im-switch.nvim-im-switch.nvim-📦-installation*
 
@@ -43,9 +48,9 @@ Install the plugin with your preferred package manager.
 LAZY.NVIM ~
 
 >lua
+    { "nvim-lua/plenary.nvim", lazy = true }, -- plenary.nvim is required
     {
       "drop-stones/im-switch.nvim",
-      dependencies = { "nvim-lua/plenary.nvim" },
       event = "VeryLazy",
       opts = {
         -- your configurations
@@ -170,9 +175,8 @@ Events that **restore the previously saved input method**.
 
 
   [!TIP] **Setting Default IM on Mode Change**
-  To set the default input method when switching modes:
+  To set the default input method when entering normal mode:
   >lua
-      default_im_events = { "VimEnter", "InsertEnter", "FocusGained", "InsertLeave", "CmdlineLeave" },
       save_im_state_events = {},
       restore_im_events = {},
   <
