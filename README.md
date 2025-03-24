@@ -13,7 +13,7 @@ This is useful for users who frequently switch between different input methods (
 
 | OS            | Requirements |
 | ------------- | ------------ |
-| **All OS**    | Neovim >= **0.10.0** |
+| **All OS**    | Neovim >= **0.10.0**<br />[plenary.nvim](https://github.com/nvim-lua/plenary.nvim) |
 | **Windows/macOS** | `cargo` >= **1.75.0** _(optional)_ |
 | **Linux**     | An input method framework (e.g., `fcitx5`, `ibus`) |
 
@@ -24,9 +24,9 @@ Install the plugin with your preferred package manager.
 ### [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 ```lua
+{ "nvim-lua/plenary.nvim", lazy = true }, -- plenary.nvim is required
 {
   "drop-stones/im-switch.nvim",
-  dependencies = { "nvim-lua/plenary.nvim" },
   event = "VeryLazy",
   opts = {
     -- your configurations
@@ -147,10 +147,9 @@ restore_im_events = { "InsertEnter" },
 > [!TIP]
 > **Setting Default IM on Mode Change**
 >
-> To set the default input method when switching modes:
+> To set the default input method when entering normal mode:
 >
 > ```lua
-> default_im_events = { "VimEnter", "InsertEnter", "FocusGained", "InsertLeave", "CmdlineLeave" },
 > save_im_state_events = {},
 > restore_im_events = {},
 > ```
