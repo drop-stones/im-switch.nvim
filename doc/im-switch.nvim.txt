@@ -174,8 +174,8 @@ Events that **restore the previously saved input method**.
 <
 
 
-  [!TIP] **Setting Default IM on Mode Change**
-  To set the default input method when entering normal mode:
+  [!TIP] **Always Switch to Default IM on Mode Change**
+  To always switch to the default IM instead of restoring the previous one:
   >lua
       save_im_state_events = {},
       restore_im_events = {},
