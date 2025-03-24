@@ -1,6 +1,15 @@
 local opts = require("im-switch").opts
 local utils = require("im-switch.utils")
 
+local function check_plenary()
+  local ok, _ = pcall(require, "plenary")
+  if ok then
+    vim.health.ok("plenary.nvim is installed")
+  else
+    vim.health.error("plenary.nvim is not installed")
+  end
+end
+
 local function check_nvim_version()
   local version = vim.version()
   local nvim_version = string.format("%d.%d.%d", version.major, version.minor, version.patch)
@@ -120,6 +129,7 @@ return {
   check = function()
     vim.health.start("im-switch.nvim")
 
+    check_plenary()
     check_nvim_version()
 
     if not opts then
