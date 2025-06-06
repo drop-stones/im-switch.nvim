@@ -1,0 +1,28 @@
+local Path = require("plenary.path")
+local path_utils = require("im-switch.utils.path")
+
+describe("im-switch.utils.path", function()
+  it("get_plugin_root_path returns a valid path", function()
+    local root = path_utils.get_plugin_root_path()
+    assert.is_string(root)
+    assert.is_true(Path:new(root):exists())
+  end)
+
+  it("get_built_executable_path returns a Path object", function()
+    local built_path = path_utils.get_built_executable_path()
+    assert.is_true(built_path:is_path())
+    assert.is_string(built_path:absolute())
+  end)
+
+  it("get_prebuilt_executable_path returns a string path", function()
+    local prebuilt_path = path_utils.get_prebuilt_executable_path()
+    assert.is_string(prebuilt_path)
+    assert.is_true(#prebuilt_path > 0)
+  end)
+
+  it("get_executable_path returns a string path", function()
+    local exec_path = path_utils.get_executable_path()
+    assert.is_string(exec_path)
+    assert.is_true(#exec_path > 0)
+  end)
+end)
