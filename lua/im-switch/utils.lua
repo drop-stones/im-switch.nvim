@@ -28,9 +28,9 @@ local function get_plugin_root_path()
   local result = vim.system({ "git", "rev-parse", "--show-toplevel" }, { text = true, cwd = path }):wait()
 
   if result.code ~= 0 then
-    vim.api.nvim_err_writeln("Git command failed in directory: " .. path)
-    vim.api.nvim_err_writeln("Error: " .. result.stderr)
-    error("Unable to determine plugin root path")
+    local fallback = vim.fn.fnamemodify(path, ":h:h")
+    vim.notify("Git command failed in directory: " .. path, vim.log.levels.WARN)
+    return Path:new(fallback)
   end
 
   local root_path = vim.trim(result.stdout)
