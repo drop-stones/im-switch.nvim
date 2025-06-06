@@ -68,52 +68,6 @@ local default_opts = {
   },
 }
 
---- Migrate a deprecated option to a new option name
----@param new string
----@param old string
----@param opts PluginOptions
-local function migrate_option(new, old, opts)
-  if opts[old] ~= nil then
-    opts[new] = opts[old]
-    vim.notify(
-      string.format("[im-switch.nvim] '%s' is deprecated. Use '%s' instead.", old, new),
-      vim.log.levels.WARN,
-      { title = "im-switch.nvim" }
-    )
-  end
-end
-
---- Migrate a deprecated option to a new option name
----@param os string
----@param new string
----@param old string
----@param opts PluginOptions
-local function migrate_os_option(os, new, old, opts)
-  if opts[os] and opts[os][old] then
-    opts[os][new] = opts[os][old]
-    vim.notify(
-      string.format("[im-switch.nvim] '%s.%s' is deprecated. Use '%s.%s' instead.", os, old, os, new),
-      vim.log.levels.WARN,
-      { title = "im-switch.nvim" }
-    )
-  end
-end
-
---- Migrate a deprecated `string` to `string[]`
----@param opts PluginOptions
----@param os string
----@param name string
-local function deprecate_string(opts, os, name)
-  if opts[os] ~= nil and type(opts[os][name]) == "string" then
-    vim.notify(
-      string.format("[im-switch.nvim] '%s.%s' as a string is deprecated. Use an array instead.", os, name),
-      vim.log.levels.WARN,
-      { title = "im-switch.nvim" }
-    )
-    opts[os][name] = utils.split(opts[os][name])
-  end
-end
-
 local M = {}
 
 --- Initialize plugin options
@@ -129,17 +83,6 @@ end
 ---@param user_opts PluginOptions
 ---@return boolean
 function M.is_plugin_configured(user_opts)
-  -- NOTE: Migration from old to new options
-  migrate_option("macos", "mac", user_opts)
-  migrate_option("default_im_events", "set_default_im_events", user_opts)
-  migrate_option("restore_im_events", "set_previous_im_events", user_opts)
-  migrate_option("save_im_state_events", "save_im_events", user_opts)
-  migrate_os_option("linux", "get_im_command", "obtain_im_command", user_opts)
-
-  -- NOTE: Migration from string to string[]
-  deprecate_string(user_opts, "linux", "get_im_command")
-  deprecate_string(user_opts, "linux", "set_im_command")
-
   local os = utils.detect_os()
 
   if os == "wsl" or os == "windows" then
