@@ -7,10 +7,18 @@ local M = {}
 ---@param action "get"|"set"
 ---@param opts PluginOptions
 ---@param im_value? string
----@return string[]?
+---@return string[]?, string?
 function M.get_im_command(action, opts, im_value)
-  local os = os_utils.get_os_type()
-  if os == "wsl" or os == "windows" then
+  if not action or not opts then
+    return nil, "Invalid arguments: action and opts are required"
+  end
+
+  local os_type, err = os_utils.get_os_type()
+  if err then
+    return nil, err
+  end
+
+  if os_type == "wsl" or os_type == "windows" then
     if action == "get" then
       return { path.get_executable_path(), "--get" }
     elseif action == "set" then
@@ -20,13 +28,13 @@ function M.get_im_command(action, opts, im_value)
         return { path.get_executable_path(), "--disable" }
       end
     end
-  elseif os == "macos" then
+  elseif os_type == "macos" then
     if action == "get" then
       return { path.get_executable_path(), "--get" }
     elseif action == "set" then
       return { path.get_executable_path(), "--set", im_value or opts.macos.default_im }
     end
-  elseif os == "linux" then
+  elseif os_type == "linux" then
     if action == "get" then
       return opts.linux.get_im_command
     elseif action == "set" then
@@ -34,9 +42,9 @@ function M.get_im_command(action, opts, im_value)
       table.insert(command, im_value or opts.linux.default_im)
       return command
     end
+  else
+    return nil, "Unsupported OS or action: " .. os_type .. "/" .. tostring(action)
   end
-  vim.notify("Unsupported OS or action: " .. os .. "/" .. tostring(action), vim.log.levels.ERROR)
-  return nil
 end
 
 return M

@@ -83,17 +83,21 @@ end
 ---@param user_opts PluginOptions
 ---@return boolean
 function M.is_plugin_configured(user_opts)
-  local os = os_utils.get_os_type()
+  local os_type, err = os_utils.get_os_type()
+  if err then
+    vim.notify(err, vim.log.levels.ERROR)
+    return false
+  end
 
-  if os == "wsl" or os == "windows" then
+  if os_type == "wsl" or os_type == "windows" then
     return user_opts.windows and user_opts.windows.enabled
-  elseif os == "macos" then
+  elseif os_type == "macos" then
     if user_opts.macos and user_opts.macos.enabled and not user_opts.macos.default_im then
       vim.notify("The 'macos.default_im' field must be defined when macos plugin is enabled", vim.log.levels.ERROR)
       return false
     end
     return user_opts.macos and user_opts.macos.enabled
-  elseif os == "linux" then
+  elseif os_type == "linux" then
     if user_opts.linux and user_opts.linux.enabled then
       local required_fields = { "default_im", "get_im_command", "set_im_command" }
       for _, field in ipairs(required_fields) do

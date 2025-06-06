@@ -8,12 +8,13 @@ local im_command = require("im-switch.utils.im_command")
 ---@param opts PluginOptions options
 ---@return string? the current input method
 local function get_current_im(opts)
-  local command = im_command.get_im_command("get", opts)
-  if not command then
+  local command, err = im_command.get_im_command("get", opts)
+  if err then
+    vim.notify(err, vim.log.levels.ERROR)
     return nil
   end
 
-  local result = vim.system(command, { text = true }):wait()
+  local result = vim.system(command --[[ @as string[] ]], { text = true }):wait()
 
   -- Handle errors from the executable
   if result.code ~= 0 then
@@ -41,12 +42,13 @@ end
 --- Disable or set the default input method based on the operating system
 ---@param opts PluginOptions options
 function M.set_default_im(opts)
-  local command = im_command.get_im_command("set", opts)
-  if not command then
+  local command, err = im_command.get_im_command("set", opts)
+  if err then
+    vim.notify(err, vim.log.levels.ERROR)
     return nil
   end
 
-  local result = vim.system(command, { text = true }):wait()
+  local result = vim.system(command --[[ @as string[] ]], { text = true }):wait()
 
   -- Handle errors from the executable
   if result.code ~= 0 then
@@ -64,12 +66,13 @@ function M.restore_im(opts)
   end
 
   local previous_im_state = vim.api.nvim_buf_get_var(0, "saved_im_state")
-  local command = im_command.get_im_command("set", opts, previous_im_state)
-  if not command then
+  local command, err = im_command.get_im_command("set", opts, previous_im_state)
+  if err then
+    vim.notify(err, vim.log.levels.ERROR)
     return nil
   end
 
-  local result = vim.system(command):wait()
+  local result = vim.system(command --[[ @as string[] ]], { text = true }):wait()
 
   -- Check for errors in the system command
   if result.code ~= 0 then
