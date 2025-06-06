@@ -1,4 +1,4 @@
-local utils = require("im-switch.utils")
+local im_command = require("im-switch.utils.im_command")
 
 --==============================================================
 -- Local Functions
@@ -6,23 +6,20 @@ local utils = require("im-switch.utils")
 
 --- Get the current input method
 ---@param opts PluginOptions options
----@return string the current input method
+---@return string? the current input method
 local function get_current_im(opts)
-  local os = utils.detect_os()
-  local command
-
-  if os == "wsl" or os == "windows" or os == "macos" then
-    command = { utils.get_executable_path(), "--get" }
-  elseif os == "linux" then
-    command = opts.linux.get_im_command
-  else
-    error("Unsupported OS: " .. os)
+  local command, err = im_command.get_im_command("get", opts)
+  if err then
+    vim.notify(err, vim.log.levels.ERROR)
+    return nil
   end
 
-  local result = vim.system(command, { text = true }):wait()
+  local result = vim.system(command --[[ @as string[] ]], { text = true }):wait()
 
+  -- Handle errors from the executable
   if result.code ~= 0 then
-    error("Failed to get current input method: " .. result.stderr)
+    vim.notify("Failed to get current input method: " .. result.stderr, vim.log.levels.ERROR)
+    return nil
   end
 
   -- Trim all spaces and return the input method
@@ -45,24 +42,17 @@ end
 --- Disable or set the default input method based on the operating system
 ---@param opts PluginOptions options
 function M.set_default_im(opts)
-  local os = utils.detect_os()
-  local result
-
-  if (os == "wsl") or (os == "windows") then
-    result = vim.system({ utils.get_executable_path(), "--disable" }):wait()
-  elseif os == "macos" then
-    result = vim.system({ utils.get_executable_path(), "--set", opts.macos.default_im }):wait()
-  elseif os == "linux" then
-    local command = vim.deepcopy(opts.linux.set_im_command)
-    table.insert(command, opts.linux.default_im)
-    result = vim.system(command):wait()
-  else
-    error("Unsupported OS")
+  local command, err = im_command.get_im_command("set", opts)
+  if err then
+    vim.notify(err, vim.log.levels.ERROR)
+    return nil
   end
+
+  local result = vim.system(command --[[ @as string[] ]], { text = true }):wait()
 
   -- Handle errors from the executable
   if result.code ~= 0 then
-    vim.api.nvim_err_writeln("Failed to set the default input method: " .. result.stderr)
+    vim.notify("Failed to set the default input method: " .. result.stderr, vim.log.levels.ERROR)
   end
 end
 
@@ -76,29 +66,17 @@ function M.restore_im(opts)
   end
 
   local previous_im_state = vim.api.nvim_buf_get_var(0, "saved_im_state")
-  local os = utils.detect_os()
-
-  local result
-
-  if (os == "wsl") or (os == "windows") then
-    if previous_im_state == "on" then
-      result = vim.system({ utils.get_executable_path(), "--enable" }):wait()
-    elseif previous_im_state == "off" then
-      result = vim.system({ utils.get_executable_path(), "--disable" }):wait()
-    end
-  elseif os == "macos" then
-    result = vim.system({ utils.get_executable_path(), "--set", previous_im_state }):wait()
-  elseif os == "linux" then
-    local command = vim.deepcopy(opts.linux.set_im_command)
-    table.insert(command, previous_im_state)
-    result = vim.system(command):wait()
-  else
-    error("Unsupported OS")
+  local command, err = im_command.get_im_command("set", opts, previous_im_state)
+  if err then
+    vim.notify(err, vim.log.levels.ERROR)
+    return nil
   end
+
+  local result = vim.system(command --[[ @as string[] ]], { text = true }):wait()
 
   -- Check for errors in the system command
   if result.code ~= 0 then
-    vim.api.nvim_err_writeln("Failed to restore the previous input method: " .. result.stderr)
+    vim.notify("Failed to restore the previous input method: " .. result.stderr, vim.log.levels.ERROR)
   end
 end
 
