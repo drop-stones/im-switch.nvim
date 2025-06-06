@@ -75,7 +75,7 @@ local M = {}
 ---@return PluginOptions
 function M.initialize_opts(opts)
   -- Extend the opts with default_opts, overwriting nil values in opts with default_opts
-  return vim.tbl_extend("force", default_opts, opts)
+  return vim.tbl_deep_extend("force", default_opts, opts or {})
 end
 
 --- Check if the plugin is enabled and all required settings are properly configured.
@@ -89,7 +89,7 @@ function M.is_plugin_configured(user_opts)
     return user_opts.windows and user_opts.windows.enabled
   elseif os == "macos" then
     if user_opts.macos and user_opts.macos.enabled and not user_opts.macos.default_im then
-      error("The 'macos.default_im' field must be defined when macos plugin is enabled")
+      vim.notify("The 'macos.default_im' field must be defined when macos plugin is enabled", vim.log.levels.ERROR)
       return false
     end
     return user_opts.macos and user_opts.macos.enabled
@@ -98,7 +98,10 @@ function M.is_plugin_configured(user_opts)
       local required_fields = { "default_im", "get_im_command", "set_im_command" }
       for _, field in ipairs(required_fields) do
         if not user_opts.linux[field] then
-          error(string.format("The 'linux.%s' field must be defined when linux plugin is enabled", field))
+          vim.notify(
+            string.format("The 'linux.%s' field must be defined when linux plugin is enabled", field),
+            vim.log.levels.ERROR
+          )
           return false
         end
       end
@@ -106,7 +109,8 @@ function M.is_plugin_configured(user_opts)
     end
     return false
   else
-    error("Unsupported OS")
+    vim.notify("Unsupported OS", vim.log.levels.ERROR)
+    return false
   end
 end
 

@@ -6,7 +6,7 @@ local utils = require("im-switch.utils")
 
 --- Get the current input method
 ---@param opts PluginOptions options
----@return string the current input method
+---@return string? the current input method
 local function get_current_im(opts)
   local os = utils.detect_os()
   local command
@@ -16,13 +16,15 @@ local function get_current_im(opts)
   elseif os == "linux" then
     command = opts.linux.get_im_command
   else
-    error("Unsupported OS: " .. os)
+    vim.notify("Unsupported OS: " .. os, vim.log.levels.ERROR)
+    return nil
   end
 
   local result = vim.system(command, { text = true }):wait()
 
   if result.code ~= 0 then
-    error("Failed to get current input method: " .. result.stderr)
+    vim.notify("Failed to get current input method: " .. result.stderr, vim.log.levels.ERROR)
+    return nil
   end
 
   -- Trim all spaces and return the input method
@@ -57,12 +59,13 @@ function M.set_default_im(opts)
     table.insert(command, opts.linux.default_im)
     result = vim.system(command):wait()
   else
-    error("Unsupported OS")
+    vim.notify("Unsupported OS", vim.log.levels.ERROR)
+    return
   end
 
   -- Handle errors from the executable
   if result.code ~= 0 then
-    vim.api.nvim_err_writeln("Failed to set the default input method: " .. result.stderr)
+    vim.notify("Failed to set the default input method: " .. result.stderr, vim.log.levels.ERROR)
   end
 end
 
@@ -93,12 +96,13 @@ function M.restore_im(opts)
     table.insert(command, previous_im_state)
     result = vim.system(command):wait()
   else
-    error("Unsupported OS")
+    vim.notify("Unsupported OS", vim.log.levels.ERROR)
+    return
   end
 
   -- Check for errors in the system command
   if result.code ~= 0 then
-    vim.api.nvim_err_writeln("Failed to restore the previous input method: " .. result.stderr)
+    vim.notify("Failed to restore the previous input method: " .. result.stderr, vim.log.levels.ERROR)
   end
 end
 

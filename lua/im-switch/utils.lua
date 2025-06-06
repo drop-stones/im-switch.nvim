@@ -16,7 +16,7 @@ local function detect_os()
   elseif vim.fn.has("linux") == 1 then
     return "linux"
   else
-    vim.api.nvim_err_writeln("Unsupported OS")
+    vim.notify("Unsupported OS", vim.log.levels.ERROR)
     error("Unsupported OS")
   end
 end
@@ -110,6 +110,7 @@ function M.concat(list)
   elseif type(list) == "table" then
     return table.concat(list, " ")
   else
+    vim.notify("concat() expected a table or string, but got " .. type(list), vim.log.levels.ERROR)
     error("concat() expected a table or string, but got " .. type(list))
   end
 end
@@ -123,6 +124,7 @@ function M.split(str)
   elseif type(str) == "string" then
     return vim.split(str, " ")
   else
+    vim.notify("split() expected a string or string[], but got " .. type(str), vim.log.levels.ERROR)
     error("split() expected a string or string[], but got " .. type(str))
   end
 end
