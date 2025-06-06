@@ -1,4 +1,4 @@
-local utils = require("im-switch.utils")
+local os_utils = require("im-switch.utils.os")
 
 --- Windows settings
 ---@class WindowsSettings
@@ -83,7 +83,7 @@ end
 ---@param user_opts PluginOptions
 ---@return boolean
 function M.is_plugin_configured(user_opts)
-  local os = utils.detect_os()
+  local os = os_utils.get_os_type()
 
   if os == "wsl" or os == "windows" then
     return user_opts.windows and user_opts.windows.enabled

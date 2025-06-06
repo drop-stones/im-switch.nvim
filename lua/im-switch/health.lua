@@ -22,7 +22,7 @@ end
 
 --- Reports plugin status based on OS-specific options
 local function check_os_options()
-  local os = utils.detect_os()
+  local os = utils.os.get_os_type()
   local platform_opts = opts[os]
   if os == "wsl" then
     platform_opts = opts.windows
@@ -45,7 +45,7 @@ local function check_os_options()
     if os == "linux" then
       for _, key in ipairs({ "get_im_command", "set_im_command" }) do
         if type(platform_opts[key]) == "table" then
-          vim.health.ok(key .. " is " .. '"' .. utils.concat(platform_opts[key]) .. '"')
+          vim.health.ok(key .. " is " .. '"' .. table.concat(platform_opts[key], " ") .. '"')
         else
           vim.health.error(key .. " is not configured")
         end
@@ -91,11 +91,11 @@ end
 
 --- Check the availability of the im-switch binary
 local function check_binary()
-  local os = utils.detect_os()
-  if utils.should_build_with_cargo() and (vim.fn.executable("cargo") == 1) then
+  local os = utils.os.get_os_type()
+  if utils.os.should_build_with_cargo() and (vim.fn.executable("cargo") == 1) then
     check_cargo_version()
 
-    if utils.get_built_executable_path():exists() then
+    if utils.path.get_built_executable_path():exists() then
       vim.health.ok("im-switch is built correctly")
     else
       vim.health.error("im-switch is not built correctly")
@@ -118,7 +118,7 @@ local function check_binary()
   else
     local arch = jit.arch
     if ((os == "windows" or os == "wsl") and arch == "x64") or (os == "macos" and arch == "arm64") then
-      vim.health.ok("Prebuilt binary is used: " .. utils.get_prebuilt_executable_path())
+      vim.health.ok("Prebuilt binary is used: " .. utils.path.get_prebuilt_executable_path())
     else
       vim.health.error("Prebuilt binary is not supported on this OS/architecture")
     end
