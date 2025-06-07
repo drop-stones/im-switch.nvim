@@ -1,12 +1,13 @@
 mod args;
+pub mod error;
 pub mod input_method;
 
+use crate::macos::error::MacOsError;
 use args::Args;
 use clap::Parser;
 use input_method::*;
-use std::error::Error;
 
-pub fn run() -> Result<(), Box<dyn Error>> {
+pub fn run() -> Result<(), MacOsError> {
   let args: Args = Args::parse();
 
   match args.command {

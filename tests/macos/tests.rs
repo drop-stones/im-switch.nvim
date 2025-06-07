@@ -4,7 +4,7 @@ use std::error::Error;
 
 pub fn test_get_input_method() -> Result<(), Box<dyn Error>> {
   let current_input_method = get_input_method()?;
-  if !is_input_method_available(current_input_method)? {
+  if !is_input_method_available(&current_input_method)? {
     return Err(Box::from(format!(
       "get_input_method() returns unavailable input method: {}",
       current_input_method
@@ -29,7 +29,7 @@ pub fn test_set_input_method(warnings: &WarningCollector) -> Result<(), Box<dyn 
     })?;
 
   // Restore the original input method
-  set_input_method(original_input_method)?;
+  set_input_method(&original_input_method)?;
 
   Ok(())
 }
