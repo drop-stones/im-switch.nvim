@@ -1,3 +1,5 @@
+local notify = require("im-switch.utils.notify")
+
 local M = {}
 
 ---@type string?
@@ -38,7 +40,7 @@ end
 function M.should_build_with_cargo()
   local os_type, err = M.get_os_type()
   if err then
-    vim.notify(err, vim.log.levels.ERROR)
+    notify.error(err)
     return false
   end
 

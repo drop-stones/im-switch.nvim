@@ -26,7 +26,7 @@ end
 local function check_os_options()
   local os_type, err = utils.os.get_os_type()
   if err then
-    vim.notify(err, vim.log.levels.ERROR)
+    utils.notify.error(err)
     return
   end
 
@@ -102,7 +102,7 @@ end
 local function check_binary()
   local os_type, err = utils.os.get_os_type()
   if err then
-    vim.notify(err, vim.log.levels.ERROR)
+    utils.notify.error(err)
     return
   end
 

@@ -1,4 +1,5 @@
 local Path = require("plenary.path")
+local notify = require("im-switch.utils.notify")
 local os_utils = require("im-switch.utils.os")
 local system = require("im-switch.utils.system")
 
@@ -10,9 +11,9 @@ local function get_plugin_root_path()
 
   if result.code ~= 0 then
     local fallback = vim.fn.fnamemodify(path, ":h:h")
-    vim.notify("Git command failed in directory: " .. path, vim.log.levels.ERROR)
-    vim.notify("Error: " .. result.stderr, vim.log.levels.ERROR)
-    vim.notify("Falling back to: " .. fallback, vim.log.levels.WARN)
+    notify.error("Git command failed in directory: " .. path)
+    notify.error("Error: " .. result.stderr)
+    notify.warn("Falling back to: " .. fallback)
     return Path:new(fallback)
   end
 
@@ -26,7 +27,7 @@ end
 local function get_executable_extension(is_prebuilt)
   local os_type, err = os_utils.get_os_type()
   if err then
-    vim.notify(err, vim.log.levels.ERROR)
+    notify.error(err)
     return ""
   end
 
