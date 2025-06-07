@@ -1,8 +1,10 @@
 use clap::{Parser, Subcommand};
 
+/// Command-line arguments for the macOS input method switcher.
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 pub struct Args {
+  /// The subcommand to execute.
   #[command(subcommand)]
   pub command: Command,
 }

@@ -20,7 +20,10 @@ fn get_keyboard_input_sources(ctx: &NSTextInputContext) -> Option<Vec<Retained<N
   unsafe { ctx.keyboardInputSources() }.map(|v| v.to_vec())
 }
 
-// Creates and returns the current input context on the main thread.
+/// Creates and returns the current input context on the main thread.
+///
+/// # Errors
+/// Returns `MacOsError::MainThreadRequired` if not on the main thread.
 fn create_input_context() -> Result<Retained<NSTextInputContext>, MacOsError> {
   let main_thread_marker: MainThreadMarker =
     MainThreadMarker::new().ok_or_else(|| MacOsError::MainThreadRequired)?;
@@ -29,7 +32,10 @@ fn create_input_context() -> Result<Retained<NSTextInputContext>, MacOsError> {
   Ok(current_input_context)
 }
 
-// Returns a list of available input methods
+/// Returns a list of available input methods as Strings.
+///
+/// # Errors
+/// Returns `MacOsError` if the input context or input sources cannot be retrieved or converted.
 pub fn get_available_input_methods() -> Result<Vec<String>, MacOsError> {
   let input_context: Retained<NSTextInputContext> = create_input_context()?;
   let input_sources_ns: Vec<Retained<NSString>> = get_keyboard_input_sources(&input_context)
@@ -46,13 +52,22 @@ pub fn get_available_input_methods() -> Result<Vec<String>, MacOsError> {
   Ok(input_sources)
 }
 
-// Checks if a specific input method is available
+/// Checks if a specific input method is available.
+///
+/// # Arguments
+/// * `input_method` - The input method identifier to check.
+///
+/// # Errors
+/// Returns `MacOsError` if the available input methods cannot be retrieved.
 pub fn is_input_method_available(input_method: &str) -> Result<bool, MacOsError> {
   let available_input_methods = get_available_input_methods()?;
   Ok(available_input_methods.iter().any(|s| s == input_method))
 }
 
-// Retrieves the currently selected input method
+/// Retrieves the currently selected input method as a String.
+///
+/// # Errors
+/// Returns `MacOsError` if the input method cannot be retrieved or converted.
 pub fn get_input_method() -> Result<String, MacOsError> {
   let input_context: Retained<NSTextInputContext> = create_input_context()?;
   let input_method_retained = input_context
@@ -66,7 +81,13 @@ pub fn get_input_method() -> Result<String, MacOsError> {
   Ok(input_method_str)
 }
 
-// Sets the input method for a specific input method
+/// Sets the input method for a specific input method identifier.
+///
+/// # Arguments
+/// * `input_method` - The input method identifier to set.
+///
+/// # Errors
+/// Returns `MacOsError` if the input method is not available or cannot be set.
 pub fn set_input_method(input_method: &str) -> Result<(), MacOsError> {
   // Check if the specified input method is available
   if !is_input_method_available(input_method)? {

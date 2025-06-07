@@ -1,20 +1,31 @@
-use im_switch::windows::input_method::*;
-use std::error::Error;
+//! Tests for Windows input method operations.
+//!
+//! Includes tests for enabling, disabling, and getting the IME state.
 
-pub fn test_enable_im() -> Result<(), Box<dyn Error>> {
+use im_switch::windows::input_method::*;
+
+/// Tests that enabling the input method sets the IME state to "on".
+///
+/// # Errors
+/// Returns an error if enabling the IME or checking its state fails.
+pub fn test_enable_im() -> Result<(), Box<dyn std::error::Error>> {
   enable_im()?;
-  let current_im = get_im_state()?;
-  if current_im != "on" {
-    return Err(format!("Expected 'on', but got '{}'", current_im).into());
+  let state = get_im_state()?;
+  if state != "on" {
+    return Err("IME state is not 'on' after enabling".into());
   }
   Ok(())
 }
 
-pub fn test_disable_im() -> Result<(), Box<dyn Error>> {
+/// Tests that disabling the input method sets the IME state to "off".
+///
+/// # Errors
+/// Returns an error if disabling the IME or checking its state fails.
+pub fn test_disable_im() -> Result<(), Box<dyn std::error::Error>> {
   disable_im()?;
-  let current_im = get_im_state()?;
-  if current_im != "off" {
-    return Err(format!("Expected 'off', but got '{}'", current_im).into());
+  let state = get_im_state()?;
+  if state != "off" {
+    return Err("IME state is not 'off' after disabling".into());
   }
   Ok(())
 }
