@@ -110,3 +110,18 @@ pub fn set_input_method(input_method: &str) -> Result<(), MacOsError> {
 
   Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use objc2_foundation::NSString;
+
+  /// Tests that nsstring_to_string correctly converts a valid NSString.
+  #[test]
+  fn test_nsstring_to_string_valid() -> Result<(), MacOsError> {
+    let nsstr = NSString::from_str("hello");
+    let result = nsstring_to_string(&nsstr)?;
+    assert_eq!(result, "hello");
+    Ok(())
+  }
+}
