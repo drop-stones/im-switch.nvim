@@ -1,83 +1,71 @@
 local im_command = require("im-switch.utils.im_command")
+local notify = require("im-switch.utils.notify")
+local system = require("im-switch.utils.system")
 
---==============================================================
--- Local Functions
---==============================================================
-
---- Get the current input method
----@param opts PluginOptions options
----@return string? the current input method
-local function get_current_im(opts)
-  local command, err = im_command.get_im_command("get", opts)
-  if err then
-    vim.notify(err, vim.log.levels.ERROR)
-    return nil
-  end
-
-  local result = vim.system(command --[[ @as string[] ]], { text = true }):wait()
-
-  -- Handle errors from the executable
-  if result.code ~= 0 then
-    vim.notify("Failed to get current input method: " .. result.stderr, vim.log.levels.ERROR)
-    return nil
-  end
-
-  -- Trim all spaces and return the input method
-  return vim.trim(result.stdout)
-end
-
---==============================================================
--- Public Functions
---==============================================================
+---@type string?
+local last_im_state = nil
 
 local M = {}
 
---- Save the current input method to the buffer variable
----@param opts PluginOptions options
-function M.save_im_state(opts)
-  local current_im = get_current_im(opts)
-  vim.api.nvim_buf_set_var(0, "saved_im_state", current_im)
+---Set the default input method for the current OS.
+---@return boolean
+function M.set_default_im()
+  local command, err = im_command.get_im_command("set")
+  if err then
+    notify.error(err)
+    return false
+  end
+
+  local result = system.run_system(command --[[ @as string[] ]])
+  if result.code ~= 0 then
+    notify.error("Failed to set the default input method: " .. result.stderr)
+    return false
+  end
+
+  return true
 end
 
---- Disable or set the default input method based on the operating system
----@param opts PluginOptions options
-function M.set_default_im(opts)
-  local command, err = im_command.get_im_command("set", opts)
+---Save the current input method state.
+---@return boolean
+function M.save_im_state()
+  local command, err = im_command.get_im_command("get")
   if err then
-    vim.notify(err, vim.log.levels.ERROR)
-    return nil
+    notify.error(err)
+    return false
   end
 
-  local result = vim.system(command --[[ @as string[] ]], { text = true }):wait()
-
-  -- Handle errors from the executable
+  local result = system.run_system(command --[[ @as string[] ]])
   if result.code ~= 0 then
-    vim.notify("Failed to set the default input method: " .. result.stderr, vim.log.levels.ERROR)
+    notify.error("Failed to get current input method: " .. result.stderr)
+    return false
   end
+
+  -- Save the current IM state to options for later restoration
+  last_im_state = vim.trim(result.stdout)
+  return true
 end
 
---- Restore the previously saved input method
----@param opts PluginOptions options
-function M.restore_im(opts)
-  -- If no input method saved, store the current one and return
-  if vim.b["saved_im_state"] == nil then
-    M.save_im_state(opts)
-    return
+---Restore the previously saved input method state.
+---@return boolean
+function M.restore_im()
+  -- If no previous state, get current IM and save it
+  if not last_im_state then
+    M.save_im_state()
   end
 
-  local previous_im_state = vim.api.nvim_buf_get_var(0, "saved_im_state")
-  local command, err = im_command.get_im_command("set", opts, previous_im_state)
+  local command, err = im_command.get_im_command("set", last_im_state)
   if err then
-    vim.notify(err, vim.log.levels.ERROR)
-    return nil
+    notify.error(err)
+    return false
   end
 
-  local result = vim.system(command --[[ @as string[] ]], { text = true }):wait()
-
-  -- Check for errors in the system command
+  local result = system.run_system(command --[[ @as string[] ]])
   if result.code ~= 0 then
-    vim.notify("Failed to restore the previous input method: " .. result.stderr, vim.log.levels.ERROR)
+    notify.error("Failed to restore the previous input method: " .. result.stderr)
+    return false
   end
+
+  return true
 end
 
 return M

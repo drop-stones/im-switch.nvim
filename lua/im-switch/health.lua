@@ -1,6 +1,8 @@
-local opts = require("im-switch").opts
+local notify = require("im-switch.utils.notify")
+local options = require("im-switch.options")
 local utils = require("im-switch.utils")
 
+---Check if plenary.nvim is installed.
 local function check_plenary()
   local ok, _ = pcall(require, "plenary")
   if ok then
@@ -10,6 +12,7 @@ local function check_plenary()
   end
 end
 
+---Check the current Neovim version.
 local function check_nvim_version()
   local version = vim.version()
   local nvim_version = string.format("%d.%d.%d", version.major, version.minor, version.patch)
@@ -20,50 +23,69 @@ local function check_nvim_version()
   end
 end
 
---- Reports plugin status based on OS-specific options
-local function check_os_options()
-  local os_type, err = utils.os.get_os_type()
-  if err then
-    vim.notify(err, vim.log.levels.ERROR)
-    return
-  end
-
-  local platform_opts = opts[os_type]
-  if os_type == "wsl" then
-    platform_opts = opts.windows
-  end
-
-  if not platform_opts then
-    vim.health.error(os_type .. " options are missing")
-    return
-  end
-
-  if platform_opts.enabled then
-    vim.health.ok("Plugin is enabled")
-    if os_type == "macos" or os_type == "linux" then
-      if type(platform_opts.default_im) == "string" then
-        vim.health.ok("default_im is " .. platform_opts.default_im)
-      else
-        vim.health.error("default_im is not configured")
-      end
-    end
-    if os_type == "linux" then
-      for _, key in ipairs({ "get_im_command", "set_im_command" }) do
-        if type(platform_opts[key]) == "table" then
-          vim.health.ok(key .. " is " .. '"' .. table.concat(platform_opts[key], " ") .. '"')
-        else
-          vim.health.error(key .. " is not configured")
-        end
-      end
-    end
+---Check if a command is executable.
+---@param command string
+local function check_command_exists(command)
+  if vim.fn.executable(command) == 1 then
+    vim.health.ok(command .. " is executable")
   else
-    vim.health.ok("Plugin is disabled")
+    vim.health.error(command .. " is not executable")
   end
 end
 
-local function check_cargo_version()
-  local result = vim.system({ "cargo", "--version" }, { text = true }):wait()
+---Check Linux-specific options and commands.
+---@param opts table
+local function check_linux_config(opts)
+  if not opts.linux or not opts.linux.enabled then
+    vim.health.warn("Linux plugin is disabled")
+    return
+  end
 
+  if type(opts.linux.default_im) == "string" and opts.linux.default_im ~= "" then
+    vim.health.ok("linux.default_im is set: " .. opts.linux.default_im)
+  else
+    vim.health.error("linux.default_im is not configured")
+  end
+
+  for _, key in ipairs({ "get_im_command", "set_im_command" }) do
+    local command_tbl = opts.linux[key]
+    if type(command_tbl) == "table" and #command_tbl > 0 then
+      vim.health.ok("linux." .. key .. " is set: " .. '"' .. table.concat(command_tbl, " ") .. '"')
+      check_command_exists(command_tbl[1])
+    else
+      vim.health.error("linux." .. key .. " is not configured")
+    end
+  end
+end
+
+---Check macOS-specific options.
+---@param opts table
+local function check_macos_config(opts)
+  if not opts.macos or not opts.macos.enabled then
+    vim.health.warn("macOS plugin is disabled")
+    return
+  end
+
+  if type(opts.macos.default_im) == "string" and opts.macos.default_im ~= "" then
+    vim.health.ok("macos.default_im is set: " .. opts.macos.default_im)
+  else
+    vim.health.error("macos.default_im is not configured")
+  end
+end
+
+---Check Windows/WSL-specific options.
+---@param opts table
+local function check_windows_config(opts)
+  if not opts.windows or not opts.windows.enabled then
+    vim.health.warn("Windows/WSL plugin is disabled")
+    return
+  end
+  vim.health.ok("Windows/WSL plugin is enabled")
+end
+
+---Check the installed Cargo version.
+local function check_cargo_version()
+  local result = utils.system.run_system({ "cargo", "--version" })
   if result.code ~= 0 then
     vim.health.error("Cargo is not installed or not found in PATH")
     return
@@ -73,7 +95,6 @@ local function check_cargo_version()
   if version then
     local major, minor, patch = version:match("(%d+)%.(%d+)%.(%d+)")
     major, minor, patch = tonumber(major), tonumber(minor), tonumber(patch)
-
     if major > 1 or (major == 1 and minor >= 75) then
       vim.health.ok("Cargo version: " .. version)
     else
@@ -84,7 +105,7 @@ local function check_cargo_version()
   end
 end
 
---- Extracts the command name from a given input
+---Extracts the command name from a given input
 ---@param command string[]|nil
 ---@return string|nil
 local function get_command(command)
@@ -94,35 +115,29 @@ local function get_command(command)
   return nil
 end
 
---- Check the availability of the im-switch binary
+---Check the availability of the im-switch binary.
 local function check_binary()
   local os_type, err = utils.os.get_os_type()
   if err then
-    vim.notify(err, vim.log.levels.ERROR)
+    notify.error(err)
     return
   end
 
   if utils.os.should_build_with_cargo() and (vim.fn.executable("cargo") == 1) then
     check_cargo_version()
-
     if utils.path.get_built_executable_path():exists() then
       vim.health.ok("im-switch is built correctly")
     else
       vim.health.error("im-switch is not built correctly")
     end
   elseif os_type == "linux" then
-    local commands = {} -- set to store unique command names
+    local opts = options.get()
     for _, key in ipairs({ "get_im_command", "set_im_command" }) do
       local command = get_command(opts.linux[key])
       if not command then
         vim.health.error("Invalid command format of " .. key)
-      elseif not commands[command] then
-        commands[command] = true
-        if vim.fn.executable(command) == 0 then
-          vim.health.error(command .. " is not executable")
-        else
-          vim.health.ok(command .. " is executable")
-        end
+      else
+        check_command_exists(command)
       end
     end
   else
@@ -135,18 +150,31 @@ local function check_binary()
   end
 end
 
+---Check and report plugin status based on OS-specific options.
+local function check_os_options()
+  local os_type, err = utils.os.get_os_type()
+  if err then
+    notify.error(err)
+    return
+  end
+
+  local opts = options.get()
+  if os_type == "linux" then
+    check_linux_config(opts)
+  elseif os_type == "macos" then
+    check_macos_config(opts)
+  elseif os_type == "windows" or os_type == "wsl" then
+    check_windows_config(opts)
+  else
+    vim.health.warn("Unknown OS: " .. tostring(os_type))
+  end
+end
+
 return {
   check = function()
     vim.health.start("im-switch.nvim")
-
     check_plenary()
     check_nvim_version()
-
-    if not opts then
-      vim.health.error("Plugin options are missing!")
-      return
-    end
-
     check_os_options()
     check_binary()
   end,
