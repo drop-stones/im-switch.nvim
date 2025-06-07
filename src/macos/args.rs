@@ -1,14 +1,19 @@
-use clap::Parser;
+use clap::{Parser, Subcommand};
 
 #[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
-#[group(multiple = false)]
+#[command(author, version, about, long_about = None)]
 pub struct Args {
-  /// Set input method
-  #[arg(short, long)]
-  pub set: Option<String>,
+  #[command(subcommand)]
+  pub command: Command,
+}
 
-  /// Get current input method
-  #[arg(short, long)]
-  pub get: bool,
+#[derive(Subcommand, Debug)]
+pub enum Command {
+  /// Get the current input method
+  Get,
+  /// Set the input method
+  Set {
+    /// Input method to set
+    input_method: String,
+  },
 }

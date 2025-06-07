@@ -1,18 +1,18 @@
-use clap::Parser;
+use clap::{Parser, Subcommand};
 
 #[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
-#[group(multiple = false)]
+#[command(author, version, about, long_about = None)]
 pub struct Args {
+  #[command(subcommand)]
+  pub command: Command,
+}
+
+#[derive(Subcommand, Debug)]
+pub enum Command {
   /// Activate input method
-  #[arg(short, long)]
-  pub enable: bool,
-
+  Enable,
   /// Inactivate input method
-  #[arg(short, long)]
-  pub disable: bool,
-
+  Disable,
   /// Get current input method ("on" or "off")
-  #[arg(short, long)]
-  pub get: bool,
+  Get,
 }
