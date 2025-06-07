@@ -1,18 +1,11 @@
-use std::fmt;
+use thiserror::Error;
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum WindowsError {
+  #[error("IO error: {0}")]
+  Io(#[from] std::io::Error),
+  #[error("GetForegroundWindow failed")]
   GetForegroundWindowFailed,
+  #[error("ImmGetDefaultIMEWnd failed")]
   ImmGetDefaultIMEWndFailed,
-}
-
-impl std::error::Error for WindowsError {}
-
-impl fmt::Display for WindowsError {
-  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    match self {
-      WindowsError::GetForegroundWindowFailed => write!(f, "GetForegroundWindow failed"),
-      WindowsError::ImmGetDefaultIMEWndFailed => write!(f, "ImmGetDefaultIMEWnd failed"),
-    }
-  }
 }

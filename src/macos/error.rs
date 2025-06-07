@@ -1,22 +1,15 @@
-use std::fmt;
+use thiserror::Error;
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum MacOsError {
+  #[error("IO error: {0}")]
+  Io(#[from] std::io::Error),
+  #[error("Operation must be run on the main thread")]
   MainThreadRequired,
+  #[error("Input source not found: {0}")]
   InputSourceNotFound(String),
+  #[error("Input source unavailable: {0}")]
   InputSourceUnavailable(String),
+  #[error("UTF-8 conversion error: {0}")]
   Utf8Error(String),
-}
-
-impl std::error::Error for MacOsError {}
-
-impl fmt::Display for MacOsError {
-  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    match self {
-      MacOsError::MainThreadRequired => write!(f, "Operation must be run on the main thread"),
-      MacOsError::InputSourceNotFound(s) => write!(f, "Input source not found: {}", s),
-      MacOsError::InputSourceUnavailable(s) => write!(f, "Input source unavailable: {}", s),
-      MacOsError::Utf8Error(e) => write!(f, "UTF-8 conversion error: {}", e),
-    }
-  }
 }
