@@ -7,32 +7,45 @@ use windows::Win32::{
 const IMC_GETOPENSTATUS: WPARAM = WPARAM(5);
 const IMC_SETOPENSTATUS: WPARAM = WPARAM(6);
 
+/// Safely get the foreground window handle.
+fn safe_get_foreground_window() -> HWND {
+  unsafe { GetForegroundWindow() }
+}
+
+/// Safely get the default IME window for a given HWND.
+fn safe_imm_get_default_ime_wnd(hwnd: HWND) -> HWND {
+  unsafe { ImmGetDefaultIMEWnd(hwnd) }
+}
+
+/// Safely send a message to a window.
+fn safe_send_message(hwnd: HWND, msg: u32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
+  unsafe { SendMessageA(hwnd, msg, wparam, lparam) }
+}
+
 fn get_im_window() -> Result<HWND, WindowsError> {
-  unsafe {
-    let hwnd: HWND = GetForegroundWindow();
-    if hwnd.is_invalid() {
-      return Err(WindowsError::GetForegroundWindowFailed);
-    }
-    let ime: HWND = ImmGetDefaultIMEWnd(hwnd);
-    if ime.is_invalid() {
-      return Err(WindowsError::ImmGetDefaultIMEWndFailed);
-    }
-    Ok(ime)
+  let hwnd: HWND = safe_get_foreground_window();
+  if hwnd.is_invalid() {
+    return Err(WindowsError::GetForegroundWindowFailed);
   }
+  let ime: HWND = safe_imm_get_default_ime_wnd(hwnd);
+  if ime.is_invalid() {
+    return Err(WindowsError::ImmGetDefaultIMEWndFailed);
+  }
+  Ok(ime)
 }
 
 fn set_im_state(status: LPARAM) -> Result<(), WindowsError> {
   let ime = get_im_window()?;
-  unsafe { SendMessageA(ime, WM_IME_CONTROL, IMC_SETOPENSTATUS, status) };
+  safe_send_message(ime, WM_IME_CONTROL, IMC_SETOPENSTATUS, status);
   Ok(())
 }
 
 pub fn get_im_state() -> Result<&'static str, WindowsError> {
   let ime = get_im_window()?;
-  let status = unsafe { SendMessageA(ime, WM_IME_CONTROL, IMC_GETOPENSTATUS, LPARAM(0)) };
+  let status = safe_send_message(ime, WM_IME_CONTROL, IMC_GETOPENSTATUS, LPARAM(0));
 
-  Ok(match status.0 {
-    0 => "off",
+  Ok(match status {
+    windows::Win32::Foundation::LRESULT(0) => "off",
     _ => "on",
   })
 }
