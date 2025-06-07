@@ -3,9 +3,16 @@ local notify = require("im-switch.utils.notify")
 local os_utils = require("im-switch.utils.os")
 local system = require("im-switch.utils.system")
 
+---@type Path?
+local cached_plugin_root_path = nil
+
 ---Get the root path of the plugin using git, or fallback to parent directory
 ---@return Path the root path
 local function get_plugin_root_path()
+  if cached_plugin_root_path then
+    return cached_plugin_root_path
+  end
+
   local path = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h")
   local result = system.run_system({ "git", "rev-parse", "--show-toplevel" }, { cwd = path })
 
@@ -18,7 +25,8 @@ local function get_plugin_root_path()
   end
 
   local root_path = vim.trim(result.stdout)
-  return Path:new(root_path)
+  cached_plugin_root_path = Path:new(root_path)
+  return cached_plugin_root_path
 end
 
 ---Get the executable file extension for the current OS
