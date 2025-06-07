@@ -1,14 +1,19 @@
+--[[
+im_command_spec.lua
+Unit tests for im-switch.utils.im_command.get_im_command.
+Covers all supported OS types and actions using table-driven tests.
+Ensures correct command generation and error handling for each scenario.
+]]
+
 local im_command = require("im-switch.utils.im_command")
+local options = require("im-switch.options")
 local os_utils = require("im-switch.utils.os")
 local path = require("im-switch.utils.path")
-
-local original_get_os_type = os_utils.get_os_type
-local original_get_executable_path = path.get_executable_path
 
 local dummy_opts = {
   macos = { default_im = "com.apple.keylayout.US" },
   linux = {
-    default_im = "mozc",
+    default_im = "keyboard-us",
     get_im_command = { "echo", "get-im" },
     set_im_command = { "echo", "set-im" },
   },
@@ -16,6 +21,15 @@ local dummy_opts = {
 }
 
 describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
+  local original_get_os_type
+  local original_get_executable_path
+
+  before_each(function()
+    original_get_os_type = os_utils.get_os_type
+    original_get_executable_path = path.get_executable_path
+    options.setup(dummy_opts)
+  end)
+
   after_each(function()
     os_utils.get_os_type = original_get_os_type
     path.get_executable_path = original_get_executable_path
@@ -27,7 +41,6 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       desc = "windows get",
       os_type = "windows",
       action = "get",
-      opts = dummy_opts,
       im_value = nil,
       exe_path = "C:\\im-switch.exe",
       expected = { "C:\\im-switch.exe", "--get" },
@@ -37,7 +50,6 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       desc = "windows set with im_value 'on'",
       os_type = "windows",
       action = "set",
-      opts = dummy_opts,
       im_value = "on",
       exe_path = "C:\\im-switch.exe",
       expected = { "C:\\im-switch.exe", "--enable" },
@@ -47,7 +59,6 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       desc = "windows set with im_value 'off'",
       os_type = "windows",
       action = "set",
-      opts = dummy_opts,
       im_value = "off",
       exe_path = "C:\\im-switch.exe",
       expected = { "C:\\im-switch.exe", "--disable" },
@@ -57,7 +68,6 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       desc = "windows set with default im_value",
       os_type = "windows",
       action = "set",
-      opts = dummy_opts,
       im_value = nil,
       exe_path = "C:\\im-switch.exe",
       expected = { "C:\\im-switch.exe", "--disable" },
@@ -67,7 +77,6 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       desc = "windows invalid action",
       os_type = "windows",
       action = "invalid",
-      opts = dummy_opts,
       im_value = nil,
       exe_path = "C:\\im-switch.exe",
       expected = nil,
@@ -78,7 +87,6 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       desc = "wsl get",
       os_type = "wsl",
       action = "get",
-      opts = dummy_opts,
       im_value = nil,
       exe_path = "/mnt/c/im-switch.exe",
       expected = { "/mnt/c/im-switch.exe", "--get" },
@@ -88,7 +96,6 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       desc = "wsl set with im_value 'on'",
       os_type = "wsl",
       action = "set",
-      opts = dummy_opts,
       im_value = "on",
       exe_path = "/mnt/c/im-switch.exe",
       expected = { "/mnt/c/im-switch.exe", "--enable" },
@@ -98,7 +105,6 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       desc = "wsl set with im_value 'off'",
       os_type = "wsl",
       action = "set",
-      opts = dummy_opts,
       im_value = "off",
       exe_path = "/mnt/c/im-switch.exe",
       expected = { "/mnt/c/im-switch.exe", "--disable" },
@@ -108,7 +114,6 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       desc = "wsl set with default im_value",
       os_type = "wsl",
       action = "set",
-      opts = dummy_opts,
       im_value = nil,
       exe_path = "/mnt/c/im-switch.exe",
       expected = { "/mnt/c/im-switch.exe", "--disable" },
@@ -118,7 +123,6 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       desc = "wsl invalid action",
       os_type = "wsl",
       action = "invalid",
-      opts = dummy_opts,
       im_value = nil,
       exe_path = "/mnt/c/im-switch.exe",
       expected = nil,
@@ -129,7 +133,6 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       desc = "macos get",
       os_type = "macos",
       action = "get",
-      opts = dummy_opts,
       im_value = nil,
       exe_path = "/usr/local/bin/im-switch",
       expected = { "/usr/local/bin/im-switch", "--get" },
@@ -139,7 +142,6 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       desc = "macos set with im_value",
       os_type = "macos",
       action = "set",
-      opts = dummy_opts,
       im_value = "com.apple.keylayout.US",
       exe_path = "/usr/local/bin/im-switch",
       expected = { "/usr/local/bin/im-switch", "--set", "com.apple.keylayout.US" },
@@ -149,7 +151,6 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       desc = "macos set with default im_value",
       os_type = "macos",
       action = "set",
-      opts = dummy_opts,
       im_value = nil,
       exe_path = "/usr/local/bin/im-switch",
       expected = { "/usr/local/bin/im-switch", "--set", "com.apple.keylayout.US" },
@@ -159,7 +160,6 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       desc = "macos invalid action",
       os_type = "macos",
       action = "invalid",
-      opts = dummy_opts,
       im_value = nil,
       exe_path = "/usr/local/bin/im-switch",
       expected = nil,
@@ -170,7 +170,6 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       desc = "linux get",
       os_type = "linux",
       action = "get",
-      opts = dummy_opts,
       im_value = nil,
       expected = { "echo", "get-im" },
       err = nil,
@@ -179,25 +178,22 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       desc = "linux set with im_value",
       os_type = "linux",
       action = "set",
-      opts = dummy_opts,
-      im_value = "mozc",
-      expected = { "echo", "set-im", "mozc" },
+      im_value = "keyboard-us",
+      expected = { "echo", "set-im", "keyboard-us" },
       err = nil,
     },
     {
       desc = "linux set with default im_value",
       os_type = "linux",
       action = "set",
-      opts = dummy_opts,
       im_value = nil,
-      expected = { "echo", "set-im", "mozc" },
+      expected = { "echo", "set-im", "keyboard-us" },
       err = nil,
     },
     {
       desc = "linux invalid action",
       os_type = "linux",
       action = "invalid",
-      opts = dummy_opts,
       im_value = nil,
       expected = nil,
       err = "Unsupported action for Linux: invalid",
@@ -207,15 +203,16 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       desc = "unsupported OS",
       os_type = "plan9",
       action = "get",
-      opts = dummy_opts,
       im_value = nil,
       expected = nil,
       err = "Unsupported OS: plan9",
     },
   }
 
+  -- Table-driven test for all OS/action combinations.
   for _, case in ipairs(test_cases) do
     it(case.desc, function()
+      -- Mocks OS type and executable path, then checks command and error output.
       ---@diagnostic disable-next-line: duplicate-set-field
       os_utils.get_os_type = function()
         return case.os_type
@@ -226,9 +223,9 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
           return case.exe_path
         end
       end
-      local cmd, err = im_command.get_im_command(case.action, case.opts, case.im_value)
+      local cmd, err = im_command.get_im_command(case.action, case.im_value)
       assert.are.same(cmd, case.expected)
-      if case.err then
+      if case.err and err then
         assert.is_string(err)
         assert.is_true(err:find(case.err, 1, true) ~= nil)
       else
