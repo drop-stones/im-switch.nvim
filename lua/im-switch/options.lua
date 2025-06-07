@@ -45,16 +45,24 @@ local default_opts = {
 
 local M = {}
 
---- Initialize plugin options
+---@type PluginOptions
+M.options = default_opts
+
+---Setup plugin options
 ---@param opts PluginOptions
----@return PluginOptions
-function M.initialize_opts(opts)
+function M.setup(opts)
   -- Extend the opts with default_opts, overwriting nil values in opts with default_opts
-  return vim.tbl_deep_extend("force", default_opts, opts or {})
+  M.options = vim.tbl_deep_extend("force", default_opts, opts or {})
 end
 
---- Check if the plugin is enabled and all required settings are properly configured.
---- This function is called before initialize_opts(), so opts.windows/opts.macos/opts.linux maybe nil.
+---Get plugin options
+---@return PluginOptions
+function M.get()
+  return M.options
+end
+
+---Check if the plugin is enabled and all required settings are properly configured.
+---This function is called before initialize_opts(), so opts.windows/opts.macos/opts.linux maybe nil.
 ---@param user_opts PluginOptions
 ---@return boolean
 function M.is_plugin_configured(user_opts)

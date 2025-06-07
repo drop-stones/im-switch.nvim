@@ -1,4 +1,4 @@
-local opts = require("im-switch").opts
+local options = require("im-switch.options")
 local utils = require("im-switch.utils")
 
 local function check_plenary()
@@ -28,6 +28,7 @@ local function check_os_options()
     return
   end
 
+  local opts = options.get()
   local platform_opts = opts[os_type]
   if os_type == "wsl" then
     platform_opts = opts.windows
@@ -113,6 +114,7 @@ local function check_binary()
   elseif os_type == "linux" then
     local commands = {} -- set to store unique command names
     for _, key in ipairs({ "get_im_command", "set_im_command" }) do
+      local opts = options.get()
       local command = get_command(opts.linux[key])
       if not command then
         vim.health.error("Invalid command format of " .. key)
