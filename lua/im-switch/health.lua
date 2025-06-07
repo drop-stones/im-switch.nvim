@@ -1,6 +1,7 @@
 local options = require("im-switch.options")
 local utils = require("im-switch.utils")
 
+---Check if plenary.nvim is installed.
 local function check_plenary()
   local ok, _ = pcall(require, "plenary")
   if ok then
@@ -10,6 +11,7 @@ local function check_plenary()
   end
 end
 
+---Check the current Neovim version.
 local function check_nvim_version()
   local version = vim.version()
   local nvim_version = string.format("%d.%d.%d", version.major, version.minor, version.patch)
@@ -20,7 +22,7 @@ local function check_nvim_version()
   end
 end
 
---- Reports plugin status based on OS-specific options
+---Reports plugin status based on OS-specific options
 local function check_os_options()
   local os_type, err = utils.os.get_os_type()
   if err then
@@ -62,6 +64,7 @@ local function check_os_options()
   end
 end
 
+---Check the installed Cargo version.
 local function check_cargo_version()
   local result = utils.system.run_system({ "cargo", "--version" })
 
@@ -85,7 +88,7 @@ local function check_cargo_version()
   end
 end
 
---- Extracts the command name from a given input
+---Extracts the command name from a given input
 ---@param command string[]|nil
 ---@return string|nil
 local function get_command(command)
@@ -95,7 +98,7 @@ local function get_command(command)
   return nil
 end
 
---- Check the availability of the im-switch binary
+---Check the availability of the im-switch binary.
 local function check_binary()
   local os_type, err = utils.os.get_os_type()
   if err then
