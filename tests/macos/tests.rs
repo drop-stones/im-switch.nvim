@@ -1,5 +1,5 @@
-use crate::macos::WarningCollector;
 use im_switch::macos::input_method::*;
+use im_switch::util::warning_collector::WarningCollector;
 use std::error::Error;
 
 pub fn test_get_input_method() -> Result<(), Box<dyn Error>> {
