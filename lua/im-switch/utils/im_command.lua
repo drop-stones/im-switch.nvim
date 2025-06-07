@@ -1,6 +1,12 @@
 local os_utils = require("im-switch.utils.os")
 local path = require("im-switch.utils.path")
 
+local ERRORS = {
+  invalid_args = "Invalid arguments: action is required",
+  invalid_action = "Unsupported action for %s: %s",
+  invalid_os = "Unsupported OS: %s",
+}
+
 local M = {}
 
 ---Generate the command for Windows/WSL to get/set input method.
@@ -18,7 +24,7 @@ local function get_windows_command(action, im_value)
       return { exe_path, "--disable" }
     end
   end
-  return nil, "Unsupported action for Windows/WSL: " .. tostring(action)
+  return nil, string.format(ERRORS.invalid_action, "Windows/WSL", tostring(action))
 end
 
 ---Generate the command for macOS to get/set input method.
@@ -32,7 +38,7 @@ local function get_macos_command(action, im_value)
   elseif action == "set" then
     return { exe_path, "--set", im_value }
   end
-  return nil, "Unsupported action for macOS: " .. tostring(action)
+  return nil, string.format(ERRORS.invalid_action, "macOS", tostring(action))
 end
 
 ---Generate the command for Linux to get/set input method.
@@ -48,7 +54,7 @@ local function get_linux_command(action, im_value, opts)
     table.insert(command, im_value)
     return command
   end
-  return nil, "Unsupported action for Linux: " .. tostring(action)
+  return nil, string.format(ERRORS.invalid_action, "Linux", tostring(action))
 end
 
 ---Generate the command to get/set input method based on OS and options.
@@ -58,7 +64,7 @@ end
 ---@return string[]?, string?
 function M.get_im_command(action, im_value)
   if not action then
-    return nil, "Invalid arguments: action is required"
+    return nil, ERRORS.invalid_args
   end
 
   local opts = require("im-switch.options").get()
@@ -85,7 +91,7 @@ function M.get_im_command(action, im_value)
     return get_linux_command(action, im_value, opts)
   end
 
-  return nil, "Unsupported OS: " .. tostring(os_type)
+  return nil, string.format(ERRORS.invalid_os, tostring(os_type))
 end
 
 return M
