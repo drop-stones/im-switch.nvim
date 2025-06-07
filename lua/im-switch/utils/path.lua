@@ -50,27 +50,40 @@ function M.get_plugin_root_path()
 end
 
 ---Get the built executable path in the release directory.
----@return Path
+---@return Path?
 function M.get_built_executable_path()
+  local os_type = os_utils.get_os_type()
+  if os_type == "linux" then
+    notify.warn("get_built_executable_path() is not supported on Linux.")
+    return nil
+  end
   return get_plugin_root_path():joinpath("target/release/im-switch" .. get_executable_extension(false))
 end
 
 ---Get the prebuilt executable path in the bin directory.
----@return string
+---@return string?
 function M.get_prebuilt_executable_path()
+  local os_type = os_utils.get_os_type()
+  if os_type == "linux" then
+    notify.warn("get_prebuilt_executable_path() is not supported on Linux.")
+    return nil
+  end
   return get_plugin_root_path():joinpath("bin/im-switch" .. get_executable_extension(true)):absolute()
 end
 
 ---Get the appropriate executable path (built or prebuilt).
----@return string
+---@return string?
 function M.get_executable_path()
+  local os_type = os_utils.get_os_type()
+  if os_type == "linux" then
+    notify.warn("get_executable_path() is not supported on Linux.")
+    return nil
+  end
   local executable_path = M.get_built_executable_path()
   local prebuilt_executable_path = M.get_prebuilt_executable_path()
-
-  if executable_path:exists() then
+  if executable_path and executable_path:exists() then
     return executable_path:absolute()
   end
-
   return prebuilt_executable_path
 end
 
