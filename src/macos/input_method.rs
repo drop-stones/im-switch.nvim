@@ -1,9 +1,24 @@
 use crate::macos::MacOsError;
-use libc::c_char;
 use objc2::rc::Retained;
 use objc2_app_kit::{NSTextInputContext, NSTextInputSourceIdentifier};
 use objc2_foundation::{MainThreadMarker, NSString};
 use std::{ffi::CStr, ops::Deref, str};
+
+/// Converts an Objective-C NSString to a Rust String safely.
+/// Returns a MacOsError if UTF-8 conversion fails.
+fn nsstring_to_string(nsstr: &NSString) -> Result<String, MacOsError> {
+  let cstr = unsafe { CStr::from_ptr(nsstr.UTF8String()) };
+  cstr
+    .to_str()
+    .map(|s| s.to_owned())
+    .map_err(|e| MacOsError::Utf8Error(e.to_string()))
+}
+
+/// Safely retrieves the keyboard input sources from an NSTextInputContext.
+/// Returns None if unavailable.
+fn get_keyboard_input_sources(ctx: &NSTextInputContext) -> Option<Vec<Retained<NSString>>> {
+  unsafe { ctx.keyboardInputSources() }.map(|v| v.to_vec())
+}
 
 // Creates and returns the current input context on the main thread.
 fn create_input_context() -> Result<Retained<NSTextInputContext>, MacOsError> {
@@ -17,21 +32,15 @@ fn create_input_context() -> Result<Retained<NSTextInputContext>, MacOsError> {
 // Returns a list of available input methods
 pub fn get_available_input_methods() -> Result<Vec<String>, MacOsError> {
   let input_context: Retained<NSTextInputContext> = create_input_context()?;
-  let input_sources_ns: Vec<Retained<NSString>> = unsafe { input_context.keyboardInputSources() }
+  let input_sources_ns: Vec<Retained<NSString>> = get_keyboard_input_sources(&input_context)
     .ok_or_else(|| {
       MacOsError::InputSourceUnavailable("Failed to get keyboard input sources".to_string())
-    })?
-    .to_vec();
+    })?;
 
   // Convert the input sources to a vector of String
   let input_sources: Vec<String> = input_sources_ns
     .into_iter()
-    .map(|s| {
-      unsafe { CStr::from_ptr(s.UTF8String()) }
-        .to_str()
-        .map(|s| s.to_owned())
-        .map_err(|e| MacOsError::Utf8Error(e.to_string()))
-    })
+    .map(|s| nsstring_to_string(&s))
     .collect::<Result<Vec<String>, MacOsError>>()?;
 
   Ok(input_sources)
@@ -46,16 +55,13 @@ pub fn is_input_method_available(input_method: &str) -> Result<bool, MacOsError>
 // Retrieves the currently selected input method
 pub fn get_input_method() -> Result<String, MacOsError> {
   let input_context: Retained<NSTextInputContext> = create_input_context()?;
-  let input_method_ptr: *const c_char = input_context
+  let input_method_retained = input_context
     .selectedKeyboardInputSource()
-    .ok_or_else(|| MacOsError::InputSourceUnavailable("Failed to get input method".to_string()))?
-    .deref()
-    .UTF8String();
+    .ok_or_else(|| MacOsError::InputSourceUnavailable("Failed to get input method".to_string()))?;
 
-  let input_method_str: String = unsafe { CStr::from_ptr(input_method_ptr) }
-    .to_str()
-    .map(|s| s.to_owned())
-    .map_err(|e| MacOsError::Utf8Error(e.to_string()))?;
+  let input_method_ns: &NSString = input_method_retained.deref();
+
+  let input_method_str: String = nsstring_to_string(input_method_ns)?;
 
   Ok(input_method_str)
 }
