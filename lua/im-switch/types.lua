@@ -16,9 +16,9 @@
 
 --- Plugin options
 ---@class PluginOptions
----@field default_im_events string[]
----@field save_im_state_events string[]
----@field restore_im_events string[]
+---@field default_im_events string[] Events to set default input method
+---@field save_im_state_events string[]  Events to save IM state
+---@field restore_im_events string[] Events to restore IM state
 ---@field windows WindowsSettings
 ---@field macos MacosSettings
 ---@field linux LinuxSettings
