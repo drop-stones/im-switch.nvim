@@ -1,5 +1,6 @@
 local im_command = require("im-switch.utils.im_command")
 local options = require("im-switch.options")
+local system = require("im-switch.utils.system")
 
 ---@type string?
 local last_im_state = nil
@@ -15,7 +16,7 @@ function M.set_default_im()
     return false
   end
 
-  local result = vim.system(command --[[ @as string[] ]], { text = true }):wait()
+  local result = system.run_system(command --[[ @as string[] ]])
   if result.code ~= 0 then
     vim.notify("Failed to set the default input method: " .. result.stderr, vim.log.levels.ERROR)
     return false
@@ -33,7 +34,7 @@ function M.save_im_state()
     return false
   end
 
-  local result = vim.system(command --[[ @as string[] ]], { text = true }):wait()
+  local result = system.run_system(command --[[ @as string[] ]])
   if result.code ~= 0 then
     vim.notify("Failed to get current input method: " .. result.stderr, vim.log.levels.ERROR)
     return false
@@ -58,7 +59,7 @@ function M.restore_im()
     return false
   end
 
-  local result = vim.system(command --[[ @as string[] ]], { text = true }):wait()
+  local result = system.run_system(command --[[ @as string[] ]])
   if result.code ~= 0 then
     vim.notify("Failed to restore the previous input method: " .. result.stderr, vim.log.levels.ERROR)
     return false

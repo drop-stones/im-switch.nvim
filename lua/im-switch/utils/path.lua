@@ -1,11 +1,12 @@
 local Path = require("plenary.path")
 local os_utils = require("im-switch.utils.os")
+local system = require("im-switch.utils.system")
 
 ---Get the root path of the plugin using git, or fallback to parent directory
 ---@return Path the root path
 local function get_plugin_root_path()
   local path = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h")
-  local result = vim.system({ "git", "rev-parse", "--show-toplevel" }, { text = true, cwd = path }):wait()
+  local result = system.run_system({ "git", "rev-parse", "--show-toplevel" }, { cwd = path })
 
   if result.code ~= 0 then
     local fallback = vim.fn.fnamemodify(path, ":h:h")

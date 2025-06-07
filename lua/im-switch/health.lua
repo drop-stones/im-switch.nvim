@@ -63,7 +63,7 @@ local function check_os_options()
 end
 
 local function check_cargo_version()
-  local result = vim.system({ "cargo", "--version" }, { text = true }):wait()
+  local result = utils.system.run_system({ "cargo", "--version" })
 
   if result.code ~= 0 then
     vim.health.error("Cargo is not installed or not found in PATH")

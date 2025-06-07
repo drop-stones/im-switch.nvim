@@ -19,7 +19,7 @@ end
 
 -- Build the im-switch binary
 -- stylua: ignore
-local result = vim.system({ "cargo", "build", "--release" }, { cwd = utils.path.get_plugin_root_path() }):wait()
+local result = utils.system.run_system({ "cargo", "build", "--release" }, { cwd = utils.path.get_plugin_root_path() })
 
 if result.code ~= 0 then
   error("Cargo build failed: " .. result.stderr)
