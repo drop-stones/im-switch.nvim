@@ -1,3 +1,9 @@
+--[[
+path_spec.lua
+Unit tests for im-switch.utils.path utility functions.
+Verifies correct path resolution, existence checks, and distinction between built/prebuilt paths.
+]]
+
 local Path = require("plenary.path")
 local path_utils = require("im-switch.utils.path")
 
