@@ -26,7 +26,7 @@ fn get_keyboard_input_sources(ctx: &NSTextInputContext) -> Option<Vec<Retained<N
 /// Returns `MacOsError::MainThreadRequired` if not on the main thread.
 fn create_input_context() -> Result<Retained<NSTextInputContext>, MacOsError> {
   let main_thread_marker: MainThreadMarker =
-    MainThreadMarker::new().ok_or_else(|| MacOsError::MainThreadRequired)?;
+    MainThreadMarker::new().ok_or(MacOsError::MainThreadRequired)?;
   let current_input_context: Retained<NSTextInputContext> =
     unsafe { NSTextInputContext::new(main_thread_marker) };
   Ok(current_input_context)
