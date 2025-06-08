@@ -1,18 +1,21 @@
-use clap::Parser;
+use clap::{Parser, Subcommand};
 
+/// Command-line arguments for the Windows input method switcher.
 #[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
-#[group(multiple = false)]
+#[command(author, version, about, long_about = None)]
 pub struct Args {
-  /// Activate input method
-  #[arg(short, long)]
-  pub enable: bool,
+  /// The subcommand to execute.
+  #[command(subcommand)]
+  pub command: Command,
+}
 
-  /// Inactivate input method
-  #[arg(short, long)]
-  pub disable: bool,
-
-  /// Get current input method ("on" or "off")
-  #[arg(short, long)]
-  pub get: bool,
+/// Supported subcommands for input method control.
+#[derive(Subcommand, Debug)]
+pub enum Command {
+  /// Activate the input method.
+  Enable,
+  /// Deactivate the input method.
+  Disable,
+  /// Get the current input method state ("on" or "off").
+  Get,
 }

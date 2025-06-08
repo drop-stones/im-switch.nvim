@@ -16,12 +16,12 @@ local M = {}
 local function get_windows_command(action, im_value)
   local exe_path = path.get_executable_path()
   if action == "get" then
-    return { exe_path, "--get" }
+    return { exe_path, "get" }
   elseif action == "set" then
     if im_value == "on" then
-      return { exe_path, "--enable" }
+      return { exe_path, "enable" }
     else
-      return { exe_path, "--disable" }
+      return { exe_path, "disable" }
     end
   end
   return nil, string.format(ERRORS.invalid_action, "Windows/WSL", tostring(action))
@@ -34,9 +34,9 @@ end
 local function get_macos_command(action, im_value)
   local exe_path = path.get_executable_path()
   if action == "get" then
-    return { exe_path, "--get" }
+    return { exe_path, "get" }
   elseif action == "set" then
-    return { exe_path, "--set", im_value }
+    return { exe_path, "set", im_value }
   end
   return nil, string.format(ERRORS.invalid_action, "macOS", tostring(action))
 end

@@ -1,0 +1,27 @@
+name: Rust CI
+
+on:
+  push:
+    branches: [main, feature/**]
+  pull_request:
+
+jobs:
+  build-and-test:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: Build
+        run: cargo build --all --release
+      - name: Run unit tests only
+        run: cargo test --lib --bins
+      - name: Lint (clippy)
+        run: cargo clippy --all -- -D warnings
+      - name: Format check
+        run: cargo fmt --all -- --check

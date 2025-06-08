@@ -43,7 +43,7 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       action = "get",
       im_value = nil,
       exe_path = "C:\\im-switch.exe",
-      expected = { "C:\\im-switch.exe", "--get" },
+      expected = { "C:\\im-switch.exe", "get" },
       err = nil,
     },
     {
@@ -52,7 +52,7 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       action = "set",
       im_value = "on",
       exe_path = "C:\\im-switch.exe",
-      expected = { "C:\\im-switch.exe", "--enable" },
+      expected = { "C:\\im-switch.exe", "enable" },
       err = nil,
     },
     {
@@ -61,7 +61,7 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       action = "set",
       im_value = "off",
       exe_path = "C:\\im-switch.exe",
-      expected = { "C:\\im-switch.exe", "--disable" },
+      expected = { "C:\\im-switch.exe", "disable" },
       err = nil,
     },
     {
@@ -70,7 +70,7 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       action = "set",
       im_value = nil,
       exe_path = "C:\\im-switch.exe",
-      expected = { "C:\\im-switch.exe", "--disable" },
+      expected = { "C:\\im-switch.exe", "disable" },
       err = nil,
     },
     {
@@ -89,7 +89,7 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       action = "get",
       im_value = nil,
       exe_path = "/mnt/c/im-switch.exe",
-      expected = { "/mnt/c/im-switch.exe", "--get" },
+      expected = { "/mnt/c/im-switch.exe", "get" },
       err = nil,
     },
     {
@@ -98,7 +98,7 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       action = "set",
       im_value = "on",
       exe_path = "/mnt/c/im-switch.exe",
-      expected = { "/mnt/c/im-switch.exe", "--enable" },
+      expected = { "/mnt/c/im-switch.exe", "enable" },
       err = nil,
     },
     {
@@ -107,7 +107,7 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       action = "set",
       im_value = "off",
       exe_path = "/mnt/c/im-switch.exe",
-      expected = { "/mnt/c/im-switch.exe", "--disable" },
+      expected = { "/mnt/c/im-switch.exe", "disable" },
       err = nil,
     },
     {
@@ -116,7 +116,7 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       action = "set",
       im_value = nil,
       exe_path = "/mnt/c/im-switch.exe",
-      expected = { "/mnt/c/im-switch.exe", "--disable" },
+      expected = { "/mnt/c/im-switch.exe", "disable" },
       err = nil,
     },
     {
@@ -135,7 +135,7 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       action = "get",
       im_value = nil,
       exe_path = "/usr/local/bin/im-switch",
-      expected = { "/usr/local/bin/im-switch", "--get" },
+      expected = { "/usr/local/bin/im-switch", "get" },
       err = nil,
     },
     {
@@ -144,7 +144,7 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       action = "set",
       im_value = "com.apple.keylayout.US",
       exe_path = "/usr/local/bin/im-switch",
-      expected = { "/usr/local/bin/im-switch", "--set", "com.apple.keylayout.US" },
+      expected = { "/usr/local/bin/im-switch", "set", "com.apple.keylayout.US" },
       err = nil,
     },
     {
@@ -153,7 +153,7 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       action = "set",
       im_value = nil,
       exe_path = "/usr/local/bin/im-switch",
-      expected = { "/usr/local/bin/im-switch", "--set", "com.apple.keylayout.US" },
+      expected = { "/usr/local/bin/im-switch", "set", "com.apple.keylayout.US" },
       err = nil,
     },
     {

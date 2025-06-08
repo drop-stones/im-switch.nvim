@@ -1,9 +1,8 @@
 mod tests;
-mod warning_collector;
 
+use im_switch::util::warning_collector::WarningCollector;
 use libtest_mimic::{Arguments, Failed, Trial};
 use tests::*;
-use warning_collector::WarningCollector;
 
 pub fn run(args: Arguments) -> std::process::ExitCode {
   let warnings: std::sync::Arc<WarningCollector> = WarningCollector::new();
