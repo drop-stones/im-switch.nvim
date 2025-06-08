@@ -1,0 +1,41 @@
+name: Release im-switch binaries
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            target: x86_64-apple-darwin
+          - os: macos-latest
+            target: aarch64-apple-darwin
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+    runs-on: ${{ matrix.os }}
+    name: Build im-switch on ${{ matrix.os }} (${{ matrix.target }})
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Create zip archive (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          powershell.exe -NoProfile -Command "Compress-Archive -Path target/${{ matrix.target }}/release/im-switch.exe -DestinationPath im-switch-${{ matrix.target }}.zip"
+
+      - name: Create zip archive (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          zip im-switch-${{ matrix.target }} -j target/${{ matrix.target }}/release/im-switch
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: im-switch-${{ matrix.target }}.zip
