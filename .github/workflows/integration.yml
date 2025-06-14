@@ -1,0 +1,42 @@
+name: integration-test
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main, feature/*]
+    tags-ignore: [v*.*.*]
+  workflow_run:
+    workflows: ["Release im-switch binaries"]
+    types: [completed]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            target: x86_64-apple-darwin
+          - os: macos-latest
+            target: aarch64-apple-darwin
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+    runs-on: ${{ matrix.os }}
+    name: Integration test of im-switch.nvim on ${{ matrix.os }} (${{ matrix.target }})
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install Neovim
+        uses: rhysd/action-setup-vim@v1
+        with:
+          neovim: true
+          version: stable
+
+      - name: Run integration test
+        run: |
+          nvim --headless -u tests/lua/minimal_init.lua -c "PlenaryBustedDirectory tests/lua/integration"
