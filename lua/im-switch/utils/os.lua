@@ -35,16 +35,4 @@ function M.clear_os_type_cache()
   cached_os_type = nil
 end
 
----Check if cargo build is required based on the OS
----@return boolean
-function M.should_build_with_cargo()
-  local os_type, err = M.get_os_type()
-  if err then
-    notify.error(err)
-    return false
-  end
-
-  return (os_type == "macos") or (os_type == "windows")
-end
-
 return M

@@ -5,22 +5,157 @@ for module_name, _ in pairs(package.loaded) do
   end
 end
 
-local utils = require("im-switch.utils")
+local os_utils = require("im-switch.utils.os")
+local path = require("im-switch.utils.path")
+local system = require("im-switch.utils.system")
 
--- Skip build if cargo is not installed
-if vim.fn.executable("cargo") == 0 then
-  return
+---Ensure the given directory exists (cross-platform)
+---@param ... string
+---@return string
+local function ensure_dir(...)
+  local dir = path.get_plugin_path(...)
+  if vim.fn.isdirectory(dir) == 0 then
+    vim.fn.mkdir(dir, "p")
+  end
+  return dir
 end
 
--- Skip build if not necessary
-if not utils.os.should_build_with_cargo() then
-  return
+---Check if cargo is available in PATH
+---@return boolean
+local function has_cargo()
+  return system.has_command("cargo")
 end
 
--- Build the im-switch binary
--- stylua: ignore
-local result = utils.system.run_system({ "cargo", "build", "--release" }, { cwd = utils.path.get_plugin_root_path() })
+---Get the Rust target triple for the current environment
+---@return string
+local function get_target_triple()
+  local os_type, err = os_utils.get_os_type()
+  local arch = jit and jit.arch or "x64"
+  if err then
+    error(err)
+  end
 
-if result.code ~= 0 then
-  error("Cargo build failed: " .. result.stderr)
+  if (os_type == "windows") or (os_type == "wsl") then
+    if arch == "x64" then
+      return "x86_64-pc-windows-msvc"
+    else
+      error("Unsupported architecture for windows: " .. arch)
+    end
+  elseif os_type == "macos" then
+    if arch == "x64" then
+      return "x86_64-apple-darwin"
+    elseif arch == "arm64" then
+      return "aarch64-apple-darwin"
+    else
+      error("Unsupported architecture for macOS: " .. arch)
+    end
+  end
+  error("Unsupported OS type: " .. os_type)
 end
+
+---Get the nearest git tag for the current commit (HEAD)
+---@return string
+local function get_release_version()
+  local result = system.run_system({ "git", "describe", "--tags", "--abbrev=0" })
+  if result.code ~= 0 or not result.stdout or #result.stdout == 0 then
+    error("Could not determine release version (git tag)")
+  end
+  return vim.trim(result.stdout)
+end
+
+---Build im-switch using cargo and copy the binary to bin/
+local function build_with_cargo()
+  local ext = path.get_executable_extension()
+  local bin_dir = ensure_dir("bin")
+  local bin_path = path.get_plugin_path("bin", "im-switch" .. ext)
+  local target_path = path.get_plugin_path("target", "release", "im-switch" .. ext)
+
+  -- Build
+  local build_result = system.run_system({ "cargo", "build", "--release" })
+  if build_result.code ~= 0 then
+    error("cargo build failed")
+  end
+
+  -- Ensure bin dir exists
+  system.run_system({ "mkdir", "-p", bin_dir })
+
+  -- Copy
+  local copy_result = system.run_system({ "cp", target_path, bin_path })
+  if copy_result.code ~= 0 then
+    error("Failed to copy built binary to bin/: " .. target_path)
+  end
+end
+
+---Download and extract prebuilt im-switch binary to bin/
+local function install_prebuilt_binary()
+  local version = get_release_version()
+  local triple = get_target_triple()
+  local bin_dir = ensure_dir("bin")
+  local bin_path = path.get_plugin_path("bin", "im-switch" .. path.get_executable_extension())
+  local asset_name = string.format("im-switch-%s.zip", triple)
+  local url =
+    string.format("https://github.com/drop-stones/im-switch.nvim/releases/download/%s/%s", version, asset_name)
+  local tmp_zip = path.get_plugin_path("bin", asset_name)
+
+  local os_type, err = os_utils.get_os_type()
+  if err then
+    error(err)
+  end
+
+  -- Download
+  local download_result = system.run_system({ "curl", "-fsSL", "-o", tmp_zip, url })
+  if download_result.code ~= 0 then
+    error("Failed to download prebuilt binary: " .. url)
+  end
+
+  -- Unzip
+  local unzip_result
+  if os_type == "windows" then
+    unzip_result = system.run_system({
+      "powershell.exe",
+      "-NoProfile",
+      "-Command",
+      "Expand-Archive",
+      "-Path",
+      tmp_zip,
+      "-DestinationPath",
+      bin_dir,
+      "-Force",
+    })
+  else
+    unzip_result = system.run_system({ "unzip", "-o", tmp_zip, "-d", bin_dir })
+  end
+  if unzip_result.code ~= 0 then
+    error("Failed to unzip prebuilt binary: " .. tmp_zip)
+  end
+
+  os.remove(tmp_zip)
+
+  -- Set executable permission for non-Windows systems
+  if os_type ~= "windows" then
+    local chmod_result = system.run_system({ "chmod", "+x", bin_path })
+    if chmod_result.code ~= 0 then
+      error("Failed to set executable permission: " .. bin_path)
+    end
+  end
+end
+
+---Main entry: build with cargo or install prebuilt binary
+local function setup()
+  local os_type, err = os_utils.get_os_type()
+  if err then
+    error(err)
+  end
+
+  if (os_type == "windows") or (os_type == "macos") then
+    if has_cargo() then
+      build_with_cargo()
+    else
+      install_prebuilt_binary()
+    end
+  elseif os_type == "wsl" then
+    install_prebuilt_binary()
+  end
+end
+
+setup()
