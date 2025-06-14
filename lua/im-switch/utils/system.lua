@@ -3,7 +3,9 @@
 ---@param opts? table Options for vim.system (e.g. cwd, env, etc.)
 ---@return table result { code, stdout, stderr }
 local function run_system(cmd, opts)
-  return vim.system(cmd, vim.tbl_extend("force", { text = true }, opts or {})):wait()
+  return vim
+    .system(cmd, vim.tbl_extend("force", { text = true }, opts or { cwd = require("im-switch.utils.path").get_plugin_path() }))
+    :wait()
 end
 
 ---Check if a command is available in PATH (cross-platform)
