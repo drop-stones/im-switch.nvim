@@ -2,6 +2,7 @@ name: integration-test
 
 on:
   workflow_dispatch:
+  pull_request:
   workflow_run:
     workflows: ["Release im-switch binaries"]
     types: [completed]
