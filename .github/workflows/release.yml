@@ -1,7 +1,6 @@
 name: Release im-switch binaries
 
 on:
-  workflow_dispatch:
   push:
     tags:
       - "v*.*.*"
