@@ -21,7 +21,8 @@ local function get_plugin_root_path()
     notify.error("Git command failed in directory: " .. path)
     notify.error("Error: " .. result.stderr)
     notify.warn("Falling back to: " .. fallback)
-    return Path:new(fallback)
+    cached_plugin_root_path = Path:new(fallback)
+    return cached_plugin_root_path
   end
 
   local root_path = vim.trim(result.stdout)
@@ -29,10 +30,24 @@ local function get_plugin_root_path()
   return cached_plugin_root_path
 end
 
----Get the executable file extension for the current OS
----@param is_prebuilt boolean
+local M = {}
+
+---Get a Path object for the plugin root or a subpath under it
+---@param ... string  -- subpaths under root
 ---@return string
-local function get_executable_extension(is_prebuilt)
+function M.get_plugin_path(...)
+  local root = get_plugin_root_path()
+  local args = { ... }
+  if #args == 0 then
+    return root:absolute()
+  else
+    return root:joinpath(unpack(args)):absolute()
+  end
+end
+
+---Get the executable file extension for the current OS
+---@return string
+function M.get_executable_extension()
   local os_type, err = os_utils.get_os_type()
   if err then
     notify.error(err)
@@ -41,58 +56,20 @@ local function get_executable_extension(is_prebuilt)
 
   if (os_type == "wsl") or (os_type == "windows") then
     return ".exe"
-  elseif os_type == "macos" then
-    if is_prebuilt == true then
-      return ".bin"
-    end
+  else
+    return ""
   end
-  return ""
 end
 
-local M = {}
-
----Get the absolute root path of the plugin
----@return string the root path
-function M.get_plugin_root_path()
-  return get_plugin_root_path():absolute()
-end
-
----Get the built executable path in the release directory.
----@return Path?
-function M.get_built_executable_path()
-  local os_type = os_utils.get_os_type()
-  if os_type == "linux" then
-    notify.warn("get_built_executable_path() is not supported on Linux.")
-    return nil
+---Ensure the given directory exists
+---@param ... string
+---@return string
+function M.ensure_directory_exists(...)
+  local dir = M.get_plugin_path(...)
+  if vim.fn.isdirectory(dir) == 0 then
+    vim.fn.mkdir(dir, "p")
   end
-  return get_plugin_root_path():joinpath("target/release/im-switch" .. get_executable_extension(false))
-end
-
----Get the prebuilt executable path in the bin directory.
----@return string?
-function M.get_prebuilt_executable_path()
-  local os_type = os_utils.get_os_type()
-  if os_type == "linux" then
-    notify.warn("get_prebuilt_executable_path() is not supported on Linux.")
-    return nil
-  end
-  return get_plugin_root_path():joinpath("bin/im-switch" .. get_executable_extension(true)):absolute()
-end
-
----Get the appropriate executable path (built or prebuilt).
----@return string?
-function M.get_executable_path()
-  local os_type = os_utils.get_os_type()
-  if os_type == "linux" then
-    notify.warn("get_executable_path() is not supported on Linux.")
-    return nil
-  end
-  local executable_path = M.get_built_executable_path()
-  local prebuilt_executable_path = M.get_prebuilt_executable_path()
-  if executable_path and executable_path:exists() then
-    return executable_path:absolute()
-  end
-  return prebuilt_executable_path
+  return dir
 end
 
 return M

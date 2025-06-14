@@ -22,17 +22,17 @@ local dummy_opts = {
 
 describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
   local original_get_os_type
-  local original_get_executable_path
+  local original_get_plugin_path
 
   before_each(function()
     original_get_os_type = os_utils.get_os_type
-    original_get_executable_path = path.get_executable_path
+    original_get_plugin_path = path.get_plugin_path
     options.setup(dummy_opts)
   end)
 
   after_each(function()
     os_utils.get_os_type = original_get_os_type
-    path.get_executable_path = original_get_executable_path
+    path.get_plugin_path = original_get_plugin_path
   end)
 
   local test_cases = {
@@ -219,7 +219,7 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       end
       if case.exe_path then
         ---@diagnostic disable-next-line: duplicate-set-field
-        path.get_executable_path = function()
+        path.get_plugin_path = function(...)
           return case.exe_path
         end
       end

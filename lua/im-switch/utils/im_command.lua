@@ -14,7 +14,7 @@ local M = {}
 ---@param im_value? string
 ---@return string[]?, string?
 local function get_windows_command(action, im_value)
-  local exe_path = path.get_executable_path()
+  local exe_path = path.get_plugin_path("bin", "im-switch" .. path.get_executable_extension())
   if action == "get" then
     return { exe_path, "get" }
   elseif action == "set" then
@@ -32,7 +32,7 @@ end
 ---@param im_value? string
 ---@return string[]?, string?
 local function get_macos_command(action, im_value)
-  local exe_path = path.get_executable_path()
+  local exe_path = path.get_plugin_path("bin", "im-switch" .. path.get_executable_extension())
   if action == "get" then
     return { exe_path, "get" }
   elseif action == "set" then
