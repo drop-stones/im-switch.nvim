@@ -6,6 +6,14 @@ local function run_system(cmd, opts)
   return vim.system(cmd, vim.tbl_extend("force", { text = true }, opts or {})):wait()
 end
 
+---Check if a command is available in PATH (cross-platform)
+---@param cmd string
+---@return boolean
+local function has_command(cmd)
+  return vim.fn.executable(cmd) == 1
+end
+
 return {
   run_system = run_system,
+  has_command = has_command,
 }
