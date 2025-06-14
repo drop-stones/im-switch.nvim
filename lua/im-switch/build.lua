@@ -4,12 +4,6 @@ local system = require("im-switch.utils.system")
 
 local M = {}
 
----Check if cargo is available in PATH
----@return boolean
-local function has_cargo()
-  return system.has_command("cargo")
-end
-
 ---Get the Rust target triple for the current environment
 ---@return string
 local function get_target_triple()
@@ -47,6 +41,12 @@ local function get_release_version()
   return vim.trim(result.stdout)
 end
 
+---Check if cargo is available in PATH
+---@return boolean
+function M.has_cargo()
+  return system.has_command("cargo")
+end
+
 ---Build im-switch using cargo and copy the binary to bin/
 function M.build_with_cargo()
   path.ensure_directory_exists("bin")
@@ -61,9 +61,9 @@ function M.build_with_cargo()
   end
 
   -- Copy
-  local copy_result = system.run_system({ "cp", target_path, bin_path })
-  if copy_result.code ~= 0 then
-    error("Failed to copy built binary to bin/: " .. target_path .. " - " .. (copy_result.stderr or ""))
+  local ok, err = vim.loop.fs_copyfile(target_path, bin_path)
+  if not ok then
+    error("Failed to copy built binary to bin/: " .. target_path .. " - " .. (err or "unknown error"))
   end
 end
 
@@ -132,7 +132,7 @@ function M.setup()
   end
 
   if (os_type == "windows") or (os_type == "macos") then
-    if has_cargo() then
+    if M.has_cargo() then
       M.build_with_cargo()
     else
       M.install_prebuilt_binary()
