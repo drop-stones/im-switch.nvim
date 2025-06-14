@@ -61,4 +61,15 @@ function M.get_executable_extension()
   end
 end
 
+---Ensure the given directory exists
+---@param ... string
+---@return string
+function M.ensure_directory_exists(...)
+  local dir = M.get_plugin_path(...)
+  if vim.fn.isdirectory(dir) == 0 then
+    vim.fn.mkdir(dir, "p")
+  end
+  return dir
+end
+
 return M

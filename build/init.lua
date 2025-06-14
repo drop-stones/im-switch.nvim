@@ -9,17 +9,6 @@ local os_utils = require("im-switch.utils.os")
 local path = require("im-switch.utils.path")
 local system = require("im-switch.utils.system")
 
----Ensure the given directory exists (cross-platform)
----@param ... string
----@return string
-local function ensure_dir(...)
-  local dir = path.get_plugin_path(...)
-  if vim.fn.isdirectory(dir) == 0 then
-    vim.fn.mkdir(dir, "p")
-  end
-  return dir
-end
-
 ---Check if cargo is available in PATH
 ---@return boolean
 local function has_cargo()
@@ -66,23 +55,20 @@ end
 ---Build im-switch using cargo and copy the binary to bin/
 local function build_with_cargo()
   local ext = path.get_executable_extension()
-  local bin_dir = ensure_dir("bin")
+  local bin_dir = path.ensure_directory_exists("bin")
   local bin_path = path.get_plugin_path("bin", "im-switch" .. ext)
   local target_path = path.get_plugin_path("target", "release", "im-switch" .. ext)
 
   -- Build
   local build_result = system.run_system({ "cargo", "build", "--release" })
   if build_result.code ~= 0 then
-    error("cargo build failed")
+    error("cargo build failed: " .. (build_result.stderr or ""))
   end
-
-  -- Ensure bin dir exists
-  system.run_system({ "mkdir", "-p", bin_dir })
 
   -- Copy
   local copy_result = system.run_system({ "cp", target_path, bin_path })
   if copy_result.code ~= 0 then
-    error("Failed to copy built binary to bin/: " .. target_path)
+    error("Failed to copy built binary to bin/: " .. target_path .. " - " .. (copy_result.stderr or ""))
   end
 end
 
@@ -90,7 +76,7 @@ end
 local function install_prebuilt_binary()
   local version = get_release_version()
   local triple = get_target_triple()
-  local bin_dir = ensure_dir("bin")
+  local bin_dir = path.ensure_directory_exists("bin")
   local bin_path = path.get_plugin_path("bin", "im-switch" .. path.get_executable_extension())
   local asset_name = string.format("im-switch-%s.zip", triple)
   local url =
@@ -105,7 +91,7 @@ local function install_prebuilt_binary()
   -- Download
   local download_result = system.run_system({ "curl", "-fsSL", "-o", tmp_zip, url })
   if download_result.code ~= 0 then
-    error("Failed to download prebuilt binary: " .. url)
+    error("Failed to download prebuilt binary: " .. url .. " - " .. (download_result.stderr or ""))
   end
 
   -- Unzip
@@ -126,16 +112,19 @@ local function install_prebuilt_binary()
     unzip_result = system.run_system({ "unzip", "-o", tmp_zip, "-d", bin_dir })
   end
   if unzip_result.code ~= 0 then
-    error("Failed to unzip prebuilt binary: " .. tmp_zip)
+    error("Failed to unzip prebuilt binary: " .. tmp_zip .. " - " .. (unzip_result.stderr or ""))
   end
 
-  os.remove(tmp_zip)
+  local ok, rm_err = os.remove(tmp_zip)
+  if not ok then
+    vim.notify("Failed to remove temporary zip file: " .. tmp_zip .. " - " .. (rm_err or ""), vim.log.levels.WARN)
+  end
 
   -- Set executable permission for non-Windows systems
   if os_type ~= "windows" then
     local chmod_result = system.run_system({ "chmod", "+x", bin_path })
     if chmod_result.code ~= 0 then
-      error("Failed to set executable permission: " .. bin_path)
+      error("Failed to set executable permission: " .. bin_path .. " - " .. (chmod_result.stderr or ""))
     end
   end
 end
