@@ -1,5 +1,3 @@
-local notify = require("im-switch.utils.notify")
-
 local M = {}
 
 ---@type string?

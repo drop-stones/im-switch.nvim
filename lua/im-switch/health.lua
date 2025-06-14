@@ -1,3 +1,4 @@
+local Path = require("plenary.path")
 local notify = require("im-switch.utils.notify")
 local options = require("im-switch.options")
 local utils = require("im-switch.utils")
@@ -87,7 +88,7 @@ end
 local function check_cargo_version()
   local result = utils.system.run_system({ "cargo", "--version" })
   if result.code ~= 0 then
-    vim.health.error("Cargo is not installed or not found in PATH")
+    vim.health.info("Cargo is not installed or not found in PATH")
     return
   end
 
@@ -123,14 +124,7 @@ local function check_binary()
     return
   end
 
-  if utils.os.should_build_with_cargo() and (vim.fn.executable("cargo") == 1) then
-    check_cargo_version()
-    if utils.path.get_built_executable_path():exists() then
-      vim.health.ok("im-switch is built correctly")
-    else
-      vim.health.error("im-switch is not built correctly")
-    end
-  elseif os_type == "linux" then
+  if os_type == "linux" then
     local opts = options.get()
     for _, key in ipairs({ "get_im_command", "set_im_command" }) do
       local command = get_command(opts.linux[key])
@@ -141,11 +135,16 @@ local function check_binary()
       end
     end
   else
-    local arch = jit.arch
-    if ((os_type == "windows" or os_type == "wsl") and arch == "x64") or (os_type == "macos" and arch == "arm64") then
-      vim.health.ok("Prebuilt binary is used: " .. utils.path.get_prebuilt_executable_path())
+    if os_type ~= "wsl" then
+      check_cargo_version()
+    end
+
+    local ext = utils.path.get_executable_extension()
+    local exe_path = Path:new(utils.path.get_plugin_path("bin", "im-switch" .. ext))
+    if exe_path:exists() then
+      vim.health.ok("im-switch" .. ext .. " is installed correctly")
     else
-      vim.health.error("Prebuilt binary is not supported on this OS/architecture")
+      vim.health.error("im-switch" .. ext .. " is not installed correctly")
     end
   end
 end
