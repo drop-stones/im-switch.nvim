@@ -2,10 +2,6 @@ name: integration-test
 
 on:
   workflow_dispatch:
-  pull_request:
-  push:
-    branches: [main, feature/*]
-    tags-ignore: [v*.*.*]
   workflow_run:
     workflows: ["Release im-switch binaries"]
     types: [completed]
@@ -27,6 +23,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
