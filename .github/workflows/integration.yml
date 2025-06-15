@@ -36,6 +36,12 @@ jobs:
           neovim: true
           version: stable
 
+      - name: Pre-build and clean cargo to avoid test failures (Windows workaround)
+        if: runner.os == 'Windows'
+        run: |
+          cargo build --release
+          cargo clean
+
       - name: Wait for release asset
         shell: bash
         run: |
