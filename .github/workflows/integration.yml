@@ -3,9 +3,8 @@ name: integration-test
 on:
   workflow_dispatch:
   pull_request:
-  workflow_run:
-    workflows: ["Release im-switch binaries"]
-    types: [completed]
+  push:
+    branches: [main, feature/*]
 
 jobs:
   build:
@@ -19,7 +18,7 @@ jobs:
           - os: windows-latest
             target: x86_64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
-    name: Integration test of im-switch.nvim on ${{ matrix.os }} (${{ matrix.target }})
+    name: Integration test on ${{ matrix.os }} (${{ matrix.target }})
     steps:
       - uses: actions/checkout@v4
         with:
@@ -35,6 +34,30 @@ jobs:
           neovim: true
           version: stable
 
+      - name: Wait for release asset
+        shell: bash
+        run: |
+          set -e
+          TAG=$(git describe --tags --abbrev=0)
+          if [ -z "$TAG" ]; then
+            echo "Error: No tag found. Ensure the repository has at least one tag."
+            exit 1
+          fi
+          ASSET="im-switch-${{ matrix.target }}.zip"
+          URL="https://github.com/drop-stones/im-switch.nvim/releases/download/$TAG/$ASSET"
+          for i in {1..10}; do
+            echo "Checking $URL (attempt $i)..."
+            status=$(curl -s -o /dev/null -w "%{http_code}" -I "$URL")
+            if [ "$status" = "302" ] || [ "$status" = "200" ]; then
+              echo "Asset found!"
+              exit 0
+            fi
+            echo "Asset not found (status $status), waiting 30 seconds..."
+            sleep 30
+          done
+          echo "Asset $ASSET not found after waiting."
+          exit 1
+
       - name: Run integration test
         run: |
-          nvim --headless -u tests/lua/minimal_init.lua -c "PlenaryBustedDirectory tests/lua/integration"
+          nvim --headless -u tests/lua/minimal_init.lua -c "PlenaryBustedDirectory tests/lua/integration --sequential"
