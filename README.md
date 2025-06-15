@@ -34,6 +34,30 @@ Install the plugin with your preferred package manager.
 }
 ```
 
+## 🚀 Quick Start
+
+Add the following to your plugin configuration.<br />
+This will switch to your default input method (e.g., English) when leaving insert mode.<br />
+You can set `enabled = true` for any OS you use, and adjust `default_im` or commands as needed for each environment.
+
+```lua
+require("im-switch").setup({
+  windows = {
+    enabled = true, -- Set to true if you are on Windows/WSL2
+  },
+  macos = {
+    enabled = true, -- Set to true if you are on macOS
+    default_im = "com.apple.keylayout.ABC", -- or your preferred input method
+  },
+  linux = {
+    enabled = true, -- Set to true if you are on Linux
+    default_im = "keyboard-us", -- or your preferred input method
+    get_im_command = { "fcitx5-remote", "-n" }, -- { "ibus", "engine" }
+    set_im_command = { "fcitx5-remote", "-s" }, -- { "ibus", "engine" }
+  },
+})
+```
+
 ## 🖥️  Executable for Input Method Switching
 
 Neovim itself cannot switch the input method directly.<br />
@@ -44,17 +68,20 @@ Instead, this plugin invokes an external executable to handle the switching proc
 On Windows/macOS, a Rust-based command-line utility, `im-switch`, is required.
 
 If `cargo` is installed, `im_switch` will be built automatically during plugin installation.<br />
-Otherwise, a pre-built binary will be used.
+Otherwise, a pre-built binary will be downloaded using `curl` and used automatically.
 
 > [!WARNING]
 > Pre-built binaries are available only for:
 >
-> | OS      | Architecture |
-> | ------- | ------------ |
-> | Windows | x86_64       |
-> | macOS   | arm64        |
+> | OS      | Architecture      |
+> | ------- | ----------------- |
+> | Windows | x86_64            |
+> | macOS   | aarch64, x86_64     |
 >
-> If you need a different version, install cargo and build it manually.
+> If you need a different version, make sure cargo is installed—then the plugin will automatically build the executable during installation.
+
+> [!NOTE]
+> The `im-switch` executable will also be rebuilt or updated automatically whenever you update this plugin.
 
 ### 🐧 Linux
 
@@ -113,9 +140,6 @@ Expand to see the list of all the default options below.
 ```
 
 </details>
-
-> [!important]
-> If you encounter any issues, run `:checkhealth im-switch` to diagnose problems.
 
 ### 🔧 General Configuration
 
@@ -230,6 +254,10 @@ linux = {
 },
 ```
 
-## License
+## 🩺 Troubleshooting
+
+Run `:checkhealth im-switch` if you run into any issues.
+
+## 📜 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
