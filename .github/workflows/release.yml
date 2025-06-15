@@ -2,8 +2,7 @@ name: Release im-switch binaries
 
 on:
   push:
-    tags:
-      - "v*.*.*"
+    tags: [v*.*.*]
 
 jobs:
   build:
@@ -20,10 +19,15 @@ jobs:
     name: Build im-switch on ${{ matrix.os }} (${{ matrix.target }})
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Rust toolchain (macOS only)
+        if: runner.os == 'macOS'
+        uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
-      - run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Build im-switch with cargo
+        run: cargo build --release --target ${{ matrix.target }}
 
       - name: Create zip archive (Windows)
         if: runner.os == 'Windows'
