@@ -19,5 +19,4 @@ jobs:
           version: stable
 
       - name: Run unit tests
-        run: |
-          nvim --headless -u tests/lua/minimal_init.lua -c "PlenaryBustedDirectory tests/lua/unittest"
+        run: nvim --headless -u tests/lua/minimal_init.lua -c "PlenaryBustedDirectory tests/lua/unittest"

@@ -24,7 +24,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: dtolnay/rust-toolchain@stable
+      - name: Setup Rust toolchain (macOS only)
+        if: runner.os == 'macOS'
+        uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
 
@@ -59,5 +61,4 @@ jobs:
           exit 1
 
       - name: Run integration test
-        run: |
-          nvim --headless -u tests/lua/minimal_init.lua -c "PlenaryBustedDirectory tests/lua/integration --sequential"
+        run: nvim --headless -u tests/lua/minimal_init.lua -c "PlenaryBustedDirectory tests/lua/integration --sequential"
