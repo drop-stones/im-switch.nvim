@@ -2,8 +2,7 @@ name: Release im-switch binaries
 
 on:
   push:
-    tags:
-      - "v*.*.*"
+    tags: [v*.*.*]
 
 jobs:
   build:
