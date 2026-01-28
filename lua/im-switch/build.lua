@@ -1,5 +1,6 @@
 local os_utils = require("im-switch.utils.os")
 local path = require("im-switch.utils.path")
+local rust = require("im-switch.utils.rust")
 local system = require("im-switch.utils.system")
 
 local M = {}
@@ -132,7 +133,7 @@ function M.setup()
   end
 
   if (os_type == "windows") or (os_type == "macos") then
-    if M.has_cargo() then
+    if rust.check_cargo_version("1.93.0") then
       M.build_with_cargo()
     else
       M.install_prebuilt_binary()

@@ -86,23 +86,11 @@ end
 
 ---Check the installed Cargo version.
 local function check_cargo_version()
-  local result = utils.system.run_system({ "cargo", "--version" })
-  if result.code ~= 0 then
-    vim.health.info("Cargo is not installed or not found in PATH")
-    return
-  end
-
-  local version = result.stdout:match("cargo%s+(%d+%.%d+%.%d+)")
-  if version then
-    local major, minor, patch = version:match("(%d+)%.(%d+)%.(%d+)")
-    major, minor, patch = tonumber(major), tonumber(minor), tonumber(patch)
-    if major > 1 or (major == 1 and minor >= 75) then
-      vim.health.ok("Cargo version: " .. version)
-    else
-      vim.health.warn("Cargo version is outdated: " .. version .. " (1.75.0+ recommended)")
-    end
+  local cargo_ok, cargo_msg = utils.rust.check_cargo_version("1.93.0")
+  if cargo_ok then
+    vim.health.ok(cargo_msg)
   else
-    vim.health.warn("Cargo is installed but version could not be determined")
+    vim.health.warn(cargo_msg)
   end
 end
 
