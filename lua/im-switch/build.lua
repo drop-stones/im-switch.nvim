@@ -133,7 +133,7 @@ function M.setup()
   end
 
   if (os_type == "windows") or (os_type == "macos") then
-    if rust.check_cargo_version("1.93.0") then
+    if rust.check_cargo_version() then
       M.build_with_cargo()
     else
       M.install_prebuilt_binary()

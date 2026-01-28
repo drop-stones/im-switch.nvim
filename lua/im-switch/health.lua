@@ -86,7 +86,7 @@ end
 
 ---Check the installed Cargo version.
 local function check_cargo_version()
-  local cargo_ok, cargo_msg = utils.rust.check_cargo_version("1.93.0")
+  local cargo_ok, cargo_msg = utils.rust.check_cargo_version()
   if cargo_ok then
     vim.health.ok(cargo_msg)
   else

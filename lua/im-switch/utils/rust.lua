@@ -1,9 +1,30 @@
+local path = require("im-switch.utils.path")
 local system = require("im-switch.utils.system")
 
+---Extract required rust-version from Cargo.toml.
+---@return string? version, string? err
+local function extract_rust_version()
+  local filepath = path.get_plugin_path("Cargo.toml")
+  local file = io.open(filepath, "r")
+  if not file then
+    return nil, "failed to open Cargo.toml"
+  end
+
+  for line in file:lines() do
+    local rust_version = line:match('^%s*rust%-version%s*=%s*"([%d%.]+)"')
+    if rust_version then
+      file:close()
+      return rust_version, nil
+    end
+  end
+
+  file:close()
+  return nil, "rust-version not found in Cargo.toml"
+end
+
 ---Check if cargo is available and satisfies the required version.
----@param required_version string e.g. "1.93.0"
 ---@return boolean ok, string err
-local function check_cargo_version(required_version)
+local function check_cargo_version()
   -- check if `cargo` is available
   if not system.has_command("cargo") then
     return false, "cargo not found in PATH"
@@ -21,6 +42,12 @@ local function check_cargo_version(required_version)
     return false, "failed to parse cargo version"
   end
 
+  -- extract required rust version
+  local required_ver, err = extract_rust_version()
+  if not required_ver then
+    return false, "failed to extract required rust version: " .. err
+  end
+
   -- check version
   local function parse_version(ver)
     local major, minor, patch = ver:match("(%d+)%.(%d+)%.(%d+)")
@@ -28,7 +55,7 @@ local function check_cargo_version(required_version)
   end
 
   -- parse required and current versions
-  local required_major, required_minor, required_patch = parse_version(required_version)
+  local required_major, required_minor, required_patch = parse_version(required_ver)
   local cargo_major, cargo_minor, cargo_patch = parse_version(cargo_ver)
 
   -- compare versions
@@ -39,10 +66,11 @@ local function check_cargo_version(required_version)
   then
     return true, "cargo version " .. cargo_ver .. " meets the requirement"
   else
-    return false, "cargo version " .. cargo_ver .. " does not meet the requirement of " .. required_version
+    return false, "cargo version " .. cargo_ver .. " does not meet the requirement of " .. required_ver
   end
 end
 
 return {
   check_cargo_version = check_cargo_version,
+  extract_rust_version = extract_rust_version,
 }
