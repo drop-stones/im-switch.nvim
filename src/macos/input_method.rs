@@ -17,7 +17,7 @@ fn nsstring_to_string(nsstr: &NSString) -> Result<String, MacOsError> {
 /// Safely retrieves the keyboard input sources from an NSTextInputContext.
 /// Returns None if unavailable.
 fn get_keyboard_input_sources(ctx: &NSTextInputContext) -> Option<Vec<Retained<NSString>>> {
-  unsafe { ctx.keyboardInputSources() }.map(|v| v.to_vec())
+  ctx.keyboardInputSources().map(|v| v.to_vec())
 }
 
 /// Creates and returns the current input context on the main thread.
@@ -106,7 +106,7 @@ pub fn set_input_method(input_method: &str) -> Result<(), MacOsError> {
     Some(input_method_identifier.deref());
 
   // Set the selected keyboard input source to the input method
-  unsafe { input_context.setSelectedKeyboardInputSource(input_method_ref) };
+  input_context.setSelectedKeyboardInputSource(input_method_ref);
 
   Ok(())
 }
