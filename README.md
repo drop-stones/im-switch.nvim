@@ -14,7 +14,7 @@ This is useful for users who frequently switch between different input methods (
 | OS            | Requirements |
 | ------------- | ------------ |
 | **All OS**    | Neovim >= **0.10.0**<br />[plenary.nvim](https://github.com/nvim-lua/plenary.nvim) |
-| **Windows/macOS** | `cargo` >= **1.75.0** _(optional)_ |
+| **Windows/macOS** | `cargo` >= **1.93.0** _(optional)_ |
 | **Linux**     | An input method framework (e.g., `fcitx5`, `ibus`) |
 
 ## 📦 Installation
