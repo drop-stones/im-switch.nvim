@@ -1,4 +1,4 @@
-*im-switch.nvim.txt*         For NVIM v0.8.0         Last change: 2025 June 15
+*im-switch.nvim.txt*        For NVIM v0.8.0       Last change: 2026 January 29
 
 ==============================================================================
 Table of Contents                           *im-switch.nvim-table-of-contents*
@@ -36,7 +36,7 @@ coding.
   ------------------------------------ ----------------------------------
   All OS                               Neovim >= 0.10.0plenary.nvim
 
-  Windows/macOS                        cargo >= 1.75.0 (optional)
+  Windows/macOS                        cargo >= 1.93.0 (optional)
 
   Linux                                An input method framework (e.g.,
                                        fcitx5, ibus)
