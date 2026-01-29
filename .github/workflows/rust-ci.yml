@@ -13,11 +13,21 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+
       - name: Build
         run: cargo build --all --release
+
       - name: Run unit tests only
         run: cargo test --lib --bins
+
       - name: Lint (clippy)
         run: cargo clippy --all -- -D warnings
+
       - name: Format check
         run: cargo fmt --all -- --check

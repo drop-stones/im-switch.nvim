@@ -1,5 +1,6 @@
 local os_utils = require("im-switch.utils.os")
 local path = require("im-switch.utils.path")
+local rust = require("im-switch.utils.rust")
 local system = require("im-switch.utils.system")
 
 local M = {}
@@ -39,12 +40,6 @@ local function get_release_version()
     error("Could not determine release version (git tag)")
   end
   return vim.trim(result.stdout)
-end
-
----Check if cargo is available in PATH
----@return boolean
-function M.has_cargo()
-  return system.has_command("cargo")
 end
 
 ---Build im-switch using cargo and copy the binary to bin/
@@ -132,7 +127,7 @@ function M.setup()
   end
 
   if (os_type == "windows") or (os_type == "macos") then
-    if M.has_cargo() then
+    if rust.check_cargo_version() then
       M.build_with_cargo()
     else
       M.install_prebuilt_binary()

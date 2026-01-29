@@ -1,15 +1,16 @@
 local build = require("im-switch.build")
 local os_utils = require("im-switch.utils.os")
 local path = require("im-switch.utils.path")
+local rust = require("im-switch.utils.rust")
 
 describe("integration: im-switch.build.setup", function()
-  local orig_has_cargo = build.has_cargo
+  local orig_check_cargo_available = rust.check_cargo_available
   local os_type = os_utils.get_os_type()
   local bin_dir = path.get_plugin_path("bin")
   local bin_path = path.get_plugin_path("bin", "im-switch" .. path.get_executable_extension())
 
   after_each(function()
-    build.has_cargo = orig_has_cargo
+    rust.check_cargo_available = orig_check_cargo_available
     if vim.fn.isdirectory(bin_dir) == 1 then
       vim.fn.delete(bin_dir, "rf")
     end
@@ -17,7 +18,7 @@ describe("integration: im-switch.build.setup", function()
 
   it("should build with cargo if available", function()
     ---@diagnostic disable-next-line: duplicate-set-field
-    build.has_cargo = function()
+    rust.check_cargo_available = function()
       return true
     end
     build.setup()
@@ -30,7 +31,7 @@ describe("integration: im-switch.build.setup", function()
 
   it("should download prebuilt binary if cargo is not available", function()
     ---@diagnostic disable-next-line: duplicate-set-field
-    build.has_cargo = function()
+    rust.check_cargo_available = function()
       return false
     end
     build.setup()
