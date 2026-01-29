@@ -1,9 +1,11 @@
 local path = require("im-switch.utils.path")
 local system = require("im-switch.utils.system")
 
+local M = {}
+
 ---Extract required rust-version from Cargo.toml.
 ---@return string? version, string? err
-local function extract_rust_version()
+function M.extract_rust_version()
   local filepath = path.get_plugin_path("Cargo.toml")
   local file = io.open(filepath, "r")
   if not file then
@@ -24,7 +26,7 @@ end
 
 ---Check if cargo is available and satisfies the required version.
 ---@return boolean ok, string err
-local function check_cargo_version()
+function M.check_cargo_version()
   -- check if `cargo` is available
   if not system.has_command("cargo") then
     return false, "cargo not found in PATH"
@@ -43,7 +45,7 @@ local function check_cargo_version()
   end
 
   -- extract required rust version
-  local required_ver, err = extract_rust_version()
+  local required_ver, err = M.extract_rust_version()
   if not required_ver then
     return false, "failed to extract required rust version: " .. err
   end
@@ -70,7 +72,4 @@ local function check_cargo_version()
   end
 end
 
-return {
-  check_cargo_version = check_cargo_version,
-  extract_rust_version = extract_rust_version,
-}
+return M
