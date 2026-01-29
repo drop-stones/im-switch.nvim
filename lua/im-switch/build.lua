@@ -42,12 +42,6 @@ local function get_release_version()
   return vim.trim(result.stdout)
 end
 
----Check if cargo is available in PATH
----@return boolean
-function M.has_cargo()
-  return system.has_command("cargo")
-end
-
 ---Build im-switch using cargo and copy the binary to bin/
 function M.build_with_cargo()
   path.ensure_directory_exists("bin")
