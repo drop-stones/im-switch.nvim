@@ -7,7 +7,7 @@ This is useful for users who frequently switch between different input methods (
 
 - 🔄 Switch input method according to Neovim events
 - 📦 No need to install other tools to switch input method like [im-select](https://github.com/daipeihust/im-select)
-- 🖥️  Works on Windows/macOS/Linux
+- 🖥️  Works on Windows/WSL2/macOS/Linux
 
 ## ⚡️ Requirements
 
@@ -68,17 +68,21 @@ Instead, this plugin invokes an external executable to handle the switching proc
 On Windows/macOS, a Rust-based command-line utility, `im-switch`, is required.
 
 If `cargo` is installed, `im_switch` will be built automatically during plugin installation.<br />
-Otherwise, a pre-built binary will be downloaded using `curl` and used automatically.
+Otherwise, a pre-built binary will be downloaded using `curl` and extracted using `powershell`/`tar`.
 
 > [!WARNING]
 > Pre-built binaries are available only for:
 >
-> | OS      | Architecture      |
-> | ------- | ----------------- |
-> | Windows | x86_64            |
-> | macOS   | aarch64, x86_64     |
+> | OS           | Architecture      |
+> | -------      | ----------------- |
+> | Windows/WSL2 | x86_64            |
+> | macOS        | aarch64, x86_64   |
 >
 > If you need a different version, make sure cargo is installed—then the plugin will automatically build the executable during installation.
+
+> [!NOTE]
+> **WSL2** users must use the Windows prebuilt binary.
+> Building with `cargo` inside WSL2 are not supported.
 
 > [!NOTE]
 > The `im-switch` executable will also be rebuilt or updated automatically whenever you update this plugin.
