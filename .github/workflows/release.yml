@@ -18,7 +18,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: Build im-switch on ${{ matrix.os }} (${{ matrix.target }})
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup Rust toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1
@@ -38,6 +38,6 @@ jobs:
         run: tar czvf im-switch-${{ matrix.target }}.tar.gz -C target/${{ matrix.target }}/release im-switch
 
       - name: Upload to GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: im-switch-${{ matrix.target }}.tar.gz
