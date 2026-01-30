@@ -68,10 +68,10 @@ function M.install_prebuilt_binary()
   local triple = get_target_triple()
   local bin_dir = path.ensure_directory_exists("bin")
   local bin_path = path.get_plugin_path("bin", "im-switch" .. path.get_executable_extension())
-  local asset_name = string.format("im-switch-%s.zip", triple)
+  local asset_name = string.format("im-switch-%s.tar.gz", triple)
   local url =
     string.format("https://github.com/drop-stones/im-switch.nvim/releases/download/%s/%s", version, asset_name)
-  local tmp_zip = path.get_plugin_path("bin", asset_name)
+  local tarball_path = path.get_plugin_path("bin", asset_name)
 
   local os_type, err = os_utils.get_os_type()
   if err then
@@ -79,35 +79,30 @@ function M.install_prebuilt_binary()
   end
 
   -- Download
-  local download_result = system.run_system({ "curl", "-fsSL", "-o", tmp_zip, url })
+  local download_result = system.run_system({ "curl", "-fsSL", "-o", tarball_path, url })
   if download_result.code ~= 0 then
     error("Failed to download prebuilt binary: " .. url .. " - " .. (download_result.stderr or ""))
   end
 
-  -- Unzip
-  local unzip_result
+  -- Extract tar.gz
+  local extract_cmd
   if os_type == "windows" then
-    unzip_result = system.run_system({
-      "powershell.exe",
-      "-NoProfile",
-      "-Command",
-      "Expand-Archive",
-      "-Path",
-      tmp_zip,
-      "-DestinationPath",
-      bin_dir,
-      "-Force",
-    })
+    extract_cmd = { "powershell.exe", "-NoProfile", "-Command", "tar", "-xzvf", tarball_path, "-C", bin_dir }
   else
-    unzip_result = system.run_system({ "unzip", "-o", tmp_zip, "-d", bin_dir })
-  end
-  if unzip_result.code ~= 0 then
-    error("Failed to unzip prebuilt binary: " .. tmp_zip .. " - " .. (unzip_result.stderr or ""))
+    extract_cmd = { "tar", "xzvf", tarball_path, "-C", bin_dir }
   end
 
-  local ok, rm_err = os.remove(tmp_zip)
+  local extract_result = system.run_system(extract_cmd)
+  if extract_result.code ~= 0 then
+    error("Failed to extract prebuilt binary: " .. tarball_path .. " - " .. (extract_result.stderr or ""))
+  end
+
+  local ok, rm_err = os.remove(tarball_path)
   if not ok then
-    vim.notify("Failed to remove temporary zip file: " .. tmp_zip .. " - " .. (rm_err or ""), vim.log.levels.WARN)
+    vim.notify(
+      "Failed to remove temporary archive file: " .. tarball_path .. " - " .. (rm_err or ""),
+      vim.log.levels.WARN
+    )
   end
 
   -- Set executable permission for non-Windows systems

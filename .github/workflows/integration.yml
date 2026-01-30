@@ -51,7 +51,7 @@ jobs:
             echo "Error: No tag found. Ensure the repository has at least one tag."
             exit 1
           fi
-          ASSET="im-switch-${{ matrix.target }}.zip"
+          ASSET="im-switch-${{ matrix.target }}.tar.gz"
           URL="https://github.com/drop-stones/im-switch.nvim/releases/download/$TAG/$ASSET"
           for i in {1..10}; do
             echo "Checking $URL (attempt $i)..."
