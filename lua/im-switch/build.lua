@@ -87,7 +87,7 @@ function M.install_prebuilt_binary()
   -- Extract tar.gz
   local extract_cmd
   if os_type == "windows" then
-    extract_cmd = { "powershell.exe", "-NoProfile", "-Command", "tar", "-xzvf", tarball_path, "-C", bin_dir }
+    extract_cmd = { "C:\\Windows\\System32\\tar.exe", "-xzvf", tarball_path, "-C", bin_dir }
   else
     extract_cmd = { "tar", "xzvf", tarball_path, "-C", bin_dir }
   end
