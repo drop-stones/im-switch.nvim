@@ -1,20 +1,20 @@
 # im-switch.nvim
 
-`im-switch.nvim` is a Neovim plugin that automatically switches the input method (IM) based on specific events.<br />
-This is useful for users who frequently switch between different input methods (e.g., English and Japanese) while coding.
+`im-switch.nvim` automatically switches your input method (IM) in Neovim based on events (e.g. `InsertLeave`, `InsertEnter`).
+It helps when you frequently switch between English and non-English IMs while coding.
 
 ## ✨ Features
 
 - 🔄 Switch input method according to Neovim events
 - 📦 No need to install other tools to switch input method like [im-select](https://github.com/daipeihust/im-select)
-- 🖥️  Works on Windows/WSL2/macOS/Linux
+- 🖥️ Works on Windows/WSL2/macOS/Linux
 
 ## ⚡️ Requirements
 
 | OS            | Requirements |
 | ------------- | ------------ |
 | **All OS**    | Neovim >= **0.10.0**<br />[plenary.nvim](https://github.com/nvim-lua/plenary.nvim) |
-| **Windows/macOS** | `cargo` >= **1.93.0** _(optional)_ |
+| **Windows/macOS** | `cargo` >= **1.93.0** _(optional; used to build `im-switch`)_ |
 | **Linux**     | An input method framework (e.g., `fcitx5`, `ibus`) |
 
 ## 📦 Installation
@@ -36,42 +36,31 @@ Install the plugin with your preferred package manager.
 
 ## 🚀 Quick Start
 
-Add the following to your plugin configuration.<br />
-This will switch to your default input method (e.g., English) when leaving insert mode.<br />
-You can set `enabled = true` for any OS you use, and adjust `default_im` or commands as needed for each environment.
+Enable the plugin for your OS to switch to the default IM on InsertLeave.
 
 ```lua
 require("im-switch").setup({
-  windows = {
-    enabled = true, -- Set to true if you are on Windows/WSL2
-  },
   macos = {
-    enabled = true, -- Set to true if you are on macOS
-    default_im = "com.apple.keylayout.ABC", -- or your preferred input method
-  },
-  linux = {
-    enabled = true, -- Set to true if you are on Linux
-    default_im = "keyboard-us", -- or your preferred input method
-    get_im_command = { "fcitx5-remote", "-n" }, -- { "ibus", "engine" }
-    set_im_command = { "fcitx5-remote", "-s" }, -- { "ibus", "engine" }
+    enabled = true,
+    default_im = "com.apple.keylayout.ABC",
   },
 })
 ```
 
-## 🖥️  Executable for Input Method Switching
+## 🔄 How it switches IM
 
-Neovim itself cannot switch the input method directly.<br />
-Instead, this plugin invokes an external executable to handle the switching process.
+Neovim cannot switch IM directly, so this plugin uses an external method depending on your OS:
 
-### 🌐 Windows/macOS
+- Windows/macOS: uses a helper executable named `im-switch` (built with Cargo or downloaded as a prebuilt binary)
+- Linux: runs your configured IM framework commands (e.g. `fcitx5-remote`, `ibus`)
 
-On Windows/macOS, a Rust-based command-line utility, `im-switch`, is required.
+<details><summary>Windows/macOS helper details</summary>
 
-If `cargo` is installed, `im_switch` will be built automatically during plugin installation.<br />
-Otherwise, a pre-built binary will be downloaded using `curl` and extracted using `powershell`/`tar`.
+- If `cargo` is available, `im-switch` is built automatically during installation/update.
+- Otherwise, a prebuilt binary is downloaded.
 
-> [!WARNING]
-> Pre-built binaries are available only for:
+> **WARNING:**
+> Prebuilt binaries are available only for:
 >
 > | OS           | Architecture      |
 > | -------      | ----------------- |
@@ -80,25 +69,71 @@ Otherwise, a pre-built binary will be downloaded using `curl` and extracted usin
 >
 > If you need a different version, make sure cargo is installed—then the plugin will automatically build the executable during installation.
 
-> [!NOTE]
+> **NOTE:**
 > **WSL2** users must use the Windows prebuilt binary.
-> Building with `cargo` inside WSL2 are not supported.
+> Building with `cargo` inside WSL2 is not supported.
 
-> [!NOTE]
-> The `im-switch` executable will also be rebuilt or updated automatically whenever you update this plugin.
-
-### 🐧 Linux
-
-On Linux, input method switching is handled through an input method framework (e.g., `fcitx5`, `ibus`).<br />
-
-Make sure your system has an appropriate input method framework installed and configured.
+</details>
 
 ## ⚙️  Configuration
 
-You can customize **im-switch** behavior with the following options.<br />
-Expand to see the list of all the default options below.
+### 🔧 General options
 
-<details><summary>Default Options</summary>
+| Key                  | Type     | Default | Description |
+| -------------------- | -------- | ------- | ----------- |
+| `default_im_events`    | `string[]` | `{ "VimEnter", "FocusGained", "InsertLeave", "CmdlineLeave" }` | Events that set the **default IM** |
+| `save_im_state_events` | `string[]` | `{ "InsertLeavePre" }` | Events that **save** the current IM |
+| `restore_im_events`    | `string[]` | `{ "InsertEnter" }` | Events that **restore** the saved IM |
+
+> [!TIP]
+> **Always Switch to Default IM on Mode Change (disable save/restore)**
+>
+> ```lua
+> require("im-switch").setup({
+>  save_im_state_events = {},
+>  restore_im_events = {},
+> })
+> ```
+
+### 🖥️ OS options
+
+#### 🪟 Windows/WSL2 (`windows`)
+
+| Key | Type | Default | Description |
+| --- | ---- | ------- | ----------- |
+| `windows.enabled` | `boolean` | `false` | Enable on Windows/WSL2 |
+
+#### 🍎 macOS (`macos`)
+
+| Key | Type | Default | Description |
+| --- | ---- | ------- | ----------- |
+| `macos.enabled` | `boolean` | `false` | Enable on macOS |
+| `macos.default_im` | `string` | `""` | IM to set when `default_im_events` triggers (e.g., `"com.apple.keylayout.ABC"`) |
+
+#### 🐧 Linux (`linux`)
+
+| Key | Type | Default | Description |
+| --- | ---- | ------- | ----------- |
+| `linux.enabled` | `boolean` | `false` | Enable on Linux |
+| `linux.default_im` | `string` | `""` | IM to set when `default_im_events` triggers (framework-specific value) |
+| `linux.get_im_command` | `string[]` | `{}` | Command to get current IM when `save_im_state_events` triggers |
+| `linux.set_im_command` | `string[]` | `{}` | Command to set IM when `default_im_events` or `restore_im_events` triggers |
+
+> [!TIP]
+> **Example (fcitx5)**
+>
+> ```lua
+> require("im-switch").setup({
+>   linux = {
+>     enabled = true,
+>     default_im = "keyboard-us",
+>     get_im_command = { "fcitx5-remote", "-n" },
+>     set_im_command = { "fcitx5-remote", "-s" },
+>   },
+> })
+> ```
+
+<details><summary>Default options</summary>
 
 ```lua
 {
@@ -144,119 +179,6 @@ Expand to see the list of all the default options below.
 ```
 
 </details>
-
-### 🔧 General Configuration
-
-#### `default_im_events`
-
-Events that **set the default input method**.
-
-```lua
-default_im_events = { "VimEnter", "FocusGained", "InsertLeave", "CmdlineLeave" }
-```
-
-#### `save_im_state_events`
-
-Events that **save the current input method**.<br />
-The saved input method is restored when `restore_im_events` is triggered.
-
-```lua
-save_im_state_events = { "InsertLeavePre" },
-```
-
-#### `restore_im_events`
-
-Events that **restore the previously saved input method**.
-
-```lua
-restore_im_events = { "InsertEnter" },
-```
-
-> [!TIP]
-> **Always Switch to Default IM on Mode Change**
->
-> To always switch to the default IM instead of restoring the previous one:
->
-> ```lua
-> save_im_state_events = {},
-> restore_im_events = {},
-> ```
-
-### 🪟 Windows Configuration
-
-#### `windows.enabled`
-
-Enable or disable the plugin on Windows/WSL2.
-
-```lua
-windows = {
-  enabled = false,
-},
-```
-
-### 🍎 macOS Configuration
-
-#### `macos.enabled`
-
-Enable or disable the plugin on macOS.
-
-```lua
-macos = {
-  enabled = true,
-},
-```
-
-#### `macos.default_im`
-
-The input method set when `default_im_events` is triggered.
-
-```lua
-macos = {
-  default_im = "com.apple.keylayout.ABC",
-},
-```
-
-### 🐧 Linux Configuration
-
-#### `linux.enabled`
-
-Enable or disable the plugin on Linux.
-
-```lua
-linux = {
-  enabled = true,
-},
-```
-
-#### `linux.default_im`
-
-The input method set when `default_im_events` is triggered.
-
-```lua
-linux = {
-  default_im = "keyboard-us",
-},
-```
-
-#### `linux.get_im_command`
-
-The command used to **get the current input method** when `save_im_state_events` is triggered.
-
-```lua
-linux = {
-  get_im_command = { "fcitx5-remote", "-n" },
-},
-```
-
-#### `linux.set_im_command`
-
-The command used to **set the input method** when `default_im_events` or `restore_im_events` is triggered.
-
-```lua
-linux = {
-  set_im_command = { "fcitx5-remote", "-s" },
-},
-```
 
 ## 🩺 Troubleshooting
 
