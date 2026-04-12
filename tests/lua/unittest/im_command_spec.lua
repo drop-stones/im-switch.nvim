@@ -22,17 +22,18 @@ local dummy_opts = {
 
 describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
   local original_get_os_type
-  local original_get_plugin_path
+  local original_get_cli_path
 
   before_each(function()
     original_get_os_type = os_utils.get_os_type
-    original_get_plugin_path = path.get_plugin_path
+    original_get_cli_path = path.get_cli_path
+    im_command._reset_cache()
     options.setup(dummy_opts)
   end)
 
   after_each(function()
     os_utils.get_os_type = original_get_os_type
-    path.get_plugin_path = original_get_plugin_path
+    path.get_cli_path = original_get_cli_path
   end)
 
   local test_cases = {
@@ -42,26 +43,26 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       os_type = "windows",
       action = "get",
       im_value = nil,
-      exe_path = "C:\\im-switch.exe",
-      expected = { "C:\\im-switch.exe", "get" },
+      cli_path = "C:\\im-switch.exe",
+      expected = { "C:\\im-switch.exe", "ime", "get" },
       err = nil,
     },
     {
-      desc = "windows set with im_value 'on'",
+      desc = "windows set with im_value 'enabled'",
       os_type = "windows",
       action = "set",
-      im_value = "on",
-      exe_path = "C:\\im-switch.exe",
-      expected = { "C:\\im-switch.exe", "enable" },
+      im_value = "enabled",
+      cli_path = "C:\\im-switch.exe",
+      expected = { "C:\\im-switch.exe", "ime", "enable" },
       err = nil,
     },
     {
-      desc = "windows set with im_value 'off'",
+      desc = "windows set with im_value 'disabled'",
       os_type = "windows",
       action = "set",
-      im_value = "off",
-      exe_path = "C:\\im-switch.exe",
-      expected = { "C:\\im-switch.exe", "disable" },
+      im_value = "disabled",
+      cli_path = "C:\\im-switch.exe",
+      expected = { "C:\\im-switch.exe", "ime", "disable" },
       err = nil,
     },
     {
@@ -69,8 +70,8 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       os_type = "windows",
       action = "set",
       im_value = nil,
-      exe_path = "C:\\im-switch.exe",
-      expected = { "C:\\im-switch.exe", "disable" },
+      cli_path = "C:\\im-switch.exe",
+      expected = { "C:\\im-switch.exe", "ime", "disable" },
       err = nil,
     },
     {
@@ -78,7 +79,7 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       os_type = "windows",
       action = "invalid",
       im_value = nil,
-      exe_path = "C:\\im-switch.exe",
+      cli_path = "C:\\im-switch.exe",
       expected = nil,
       err = "Unsupported action for Windows/WSL: invalid",
     },
@@ -88,26 +89,26 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       os_type = "wsl",
       action = "get",
       im_value = nil,
-      exe_path = "/mnt/c/im-switch.exe",
-      expected = { "/mnt/c/im-switch.exe", "get" },
+      cli_path = "/mnt/c/im-switch.exe",
+      expected = { "/mnt/c/im-switch.exe", "ime", "get" },
       err = nil,
     },
     {
-      desc = "wsl set with im_value 'on'",
+      desc = "wsl set with im_value 'enabled'",
       os_type = "wsl",
       action = "set",
-      im_value = "on",
-      exe_path = "/mnt/c/im-switch.exe",
-      expected = { "/mnt/c/im-switch.exe", "enable" },
+      im_value = "enabled",
+      cli_path = "/mnt/c/im-switch.exe",
+      expected = { "/mnt/c/im-switch.exe", "ime", "enable" },
       err = nil,
     },
     {
-      desc = "wsl set with im_value 'off'",
+      desc = "wsl set with im_value 'disabled'",
       os_type = "wsl",
       action = "set",
-      im_value = "off",
-      exe_path = "/mnt/c/im-switch.exe",
-      expected = { "/mnt/c/im-switch.exe", "disable" },
+      im_value = "disabled",
+      cli_path = "/mnt/c/im-switch.exe",
+      expected = { "/mnt/c/im-switch.exe", "ime", "disable" },
       err = nil,
     },
     {
@@ -115,8 +116,8 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       os_type = "wsl",
       action = "set",
       im_value = nil,
-      exe_path = "/mnt/c/im-switch.exe",
-      expected = { "/mnt/c/im-switch.exe", "disable" },
+      cli_path = "/mnt/c/im-switch.exe",
+      expected = { "/mnt/c/im-switch.exe", "ime", "disable" },
       err = nil,
     },
     {
@@ -124,7 +125,7 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       os_type = "wsl",
       action = "invalid",
       im_value = nil,
-      exe_path = "/mnt/c/im-switch.exe",
+      cli_path = "/mnt/c/im-switch.exe",
       expected = nil,
       err = "Unsupported action for Windows/WSL: invalid",
     },
@@ -134,7 +135,7 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       os_type = "macos",
       action = "get",
       im_value = nil,
-      exe_path = "/usr/local/bin/im-switch",
+      cli_path = "/usr/local/bin/im-switch",
       expected = { "/usr/local/bin/im-switch", "get" },
       err = nil,
     },
@@ -143,7 +144,7 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       os_type = "macos",
       action = "set",
       im_value = "com.apple.keylayout.US",
-      exe_path = "/usr/local/bin/im-switch",
+      cli_path = "/usr/local/bin/im-switch",
       expected = { "/usr/local/bin/im-switch", "set", "com.apple.keylayout.US" },
       err = nil,
     },
@@ -152,7 +153,7 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       os_type = "macos",
       action = "set",
       im_value = nil,
-      exe_path = "/usr/local/bin/im-switch",
+      cli_path = "/usr/local/bin/im-switch",
       expected = { "/usr/local/bin/im-switch", "set", "com.apple.keylayout.US" },
       err = nil,
     },
@@ -161,40 +162,89 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       os_type = "macos",
       action = "invalid",
       im_value = nil,
-      exe_path = "/usr/local/bin/im-switch",
+      cli_path = "/usr/local/bin/im-switch",
       expected = nil,
       err = "Unsupported action for macOS: invalid",
     },
-    -- Linux
+    -- Linux with im-switch CLI installed
     {
-      desc = "linux get",
+      desc = "linux get (CLI installed)",
       os_type = "linux",
       action = "get",
       im_value = nil,
+      cli_path = "/home/user/.local/share/im-switch.nvim/im-switch",
+      cli_installed = true,
+      expected = { "/home/user/.local/share/im-switch.nvim/im-switch", "get" },
+      err = nil,
+    },
+    {
+      desc = "linux set with im_value (CLI installed)",
+      os_type = "linux",
+      action = "set",
+      im_value = "keyboard-us",
+      cli_path = "/home/user/.local/share/im-switch.nvim/im-switch",
+      cli_installed = true,
+      expected = { "/home/user/.local/share/im-switch.nvim/im-switch", "set", "keyboard-us" },
+      err = nil,
+    },
+    {
+      desc = "linux set with default im_value (CLI installed)",
+      os_type = "linux",
+      action = "set",
+      im_value = nil,
+      cli_path = "/home/user/.local/share/im-switch.nvim/im-switch",
+      cli_installed = true,
+      expected = { "/home/user/.local/share/im-switch.nvim/im-switch", "set", "keyboard-us" },
+      err = nil,
+    },
+    {
+      desc = "linux invalid action (CLI installed)",
+      os_type = "linux",
+      action = "invalid",
+      im_value = nil,
+      cli_path = "/home/user/.local/share/im-switch.nvim/im-switch",
+      cli_installed = true,
+      expected = nil,
+      err = "Unsupported action for Linux: invalid",
+    },
+    -- Linux with im-switch CLI not installed (fallback to user commands)
+    {
+      desc = "linux get (fallback)",
+      os_type = "linux",
+      action = "get",
+      im_value = nil,
+      cli_path = "/home/user/.local/share/im-switch.nvim/im-switch",
+      cli_installed = false,
       expected = { "echo", "get-im" },
       err = nil,
     },
     {
-      desc = "linux set with im_value",
+      desc = "linux set with im_value (fallback)",
       os_type = "linux",
       action = "set",
       im_value = "keyboard-us",
+      cli_path = "/home/user/.local/share/im-switch.nvim/im-switch",
+      cli_installed = false,
       expected = { "echo", "set-im", "keyboard-us" },
       err = nil,
     },
     {
-      desc = "linux set with default im_value",
+      desc = "linux set with default im_value (fallback)",
       os_type = "linux",
       action = "set",
       im_value = nil,
+      cli_path = "/home/user/.local/share/im-switch.nvim/im-switch",
+      cli_installed = false,
       expected = { "echo", "set-im", "keyboard-us" },
       err = nil,
     },
     {
-      desc = "linux invalid action",
+      desc = "linux invalid action (fallback)",
       os_type = "linux",
       action = "invalid",
       im_value = nil,
+      cli_path = "/home/user/.local/share/im-switch.nvim/im-switch",
+      cli_installed = false,
       expected = nil,
       err = "Unsupported action for Linux: invalid",
     },
@@ -212,24 +262,43 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
   -- Table-driven test for all OS/action combinations.
   for _, case in ipairs(test_cases) do
     it(case.desc, function()
-      -- Mocks OS type and executable path, then checks command and error output.
       ---@diagnostic disable-next-line: duplicate-set-field
       os_utils.get_os_type = function()
         return case.os_type
       end
-      if case.exe_path then
+      if case.cli_path then
         ---@diagnostic disable-next-line: duplicate-set-field
-        path.get_plugin_path = function(...)
-          return case.exe_path
+        path.get_cli_path = function()
+          return case.cli_path
         end
       end
-      local cmd, err = im_command.get_im_command(case.action, case.im_value)
-      assert.are.same(cmd, case.expected)
-      if case.err and err then
-        assert.is_string(err)
-        assert.is_true(err:find(case.err, 1, true) ~= nil)
+      if case.cli_installed ~= nil then
+        -- Mock vim.fn.executable to control CLI detection
+        local original_executable = vim.fn.executable
+        vim.fn.executable = function(cmd)
+          if cmd == case.cli_path then
+            return case.cli_installed and 1 or 0
+          end
+          return original_executable(cmd)
+        end
+        local cmd, err = im_command.get_im_command(case.action, case.im_value)
+        vim.fn.executable = original_executable
+        assert.are.same(cmd, case.expected)
+        if case.err and err then
+          assert.is_string(err)
+          assert.is_true(err:find(case.err, 1, true) ~= nil)
+        else
+          assert.is_nil(err)
+        end
       else
-        assert.is_nil(err)
+        local cmd, err = im_command.get_im_command(case.action, case.im_value)
+        assert.are.same(cmd, case.expected)
+        if case.err and err then
+          assert.is_string(err)
+          assert.is_true(err:find(case.err, 1, true) ~= nil)
+        else
+          assert.is_nil(err)
+        end
       end
     end)
   end

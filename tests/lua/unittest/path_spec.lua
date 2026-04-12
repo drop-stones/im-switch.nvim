@@ -1,7 +1,6 @@
 -- path_spec.lua
 -- Unit tests for im-switch.utils.path
 
-local os_utils = require("im-switch.utils.os")
 local path = require("im-switch.utils.path")
 
 describe("im-switch.utils.path", function()
@@ -20,33 +19,5 @@ describe("im-switch.utils.path", function()
     assert.is_truthy(exe_path)
     assert.is_true(type(exe_path) == "string")
     assert.is_not_nil(exe_path:match("bin/im%-switch%.exe$") or exe_path:match("bin\\im%-switch%.exe$"))
-  end)
-end)
-
-describe("get_executable_extension", function()
-  it("returns .exe for windows/wsl", function()
-    for _, os_type in ipairs({ "windows", "wsl" }) do
-      ---@diagnostic disable-next-line: duplicate-set-field
-      os_utils.get_os_type = function()
-        return os_type
-      end
-      assert.are.equal(".exe", path.get_executable_extension())
-    end
-  end)
-
-  it("returns empty string for macos", function()
-    ---@diagnostic disable-next-line: duplicate-set-field
-    os_utils.get_os_type = function()
-      return "macos"
-    end
-    assert.are.equal("", path.get_executable_extension())
-  end)
-
-  it("returns empty string for linux", function()
-    ---@diagnostic disable-next-line: duplicate-set-field
-    os_utils.get_os_type = function()
-      return "linux"
-    end
-    assert.are.equal("", path.get_executable_extension())
   end)
 end)
