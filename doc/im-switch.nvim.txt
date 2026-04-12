@@ -1,4 +1,5 @@
-*im-switch.nvim.txt*         For NVIM v0.8.0        Last change: 2026 April 12
+*im-switch.nvim.txt*
+                                 For NVIM v0.8.0    Last change: 2026 April 12
 
 ==============================================================================
 Table of Contents                           *im-switch.nvim-table-of-contents*
@@ -30,14 +31,10 @@ switch between English and non-English IMs while coding.
 
 ⚡️ REQUIREMENTS        *im-switch.nvim-im-switch.nvim-⚡️-requirements*
 
-  -----------------------------------------------------------------------
-  OS                                   Requirements
-  ------------------------------------ ----------------------------------
-  All OS                               Neovim >= 0.10.0
-
-  Linux                                An input method framework (e.g.,
-                                       fcitx5, ibus)
-  -----------------------------------------------------------------------
+  OS       Requirements
+  -------- ------------------------------------------------
+  All OS   Neovim >= 0.10.0
+  Linux    An input method framework (e.g., fcitx5, ibus)
 
   [!NOTE] The plugin automatically downloads the `im-switch`
   <https://github.com/drop-stones/im-switch> CLI binary during installation. No
@@ -139,6 +136,7 @@ options are needed.
     })
 <
 
+
 🍎 MACOS (MACOS)
 
   ----------------------------------------------------------------------------------
@@ -148,6 +146,7 @@ options are needed.
                                                      default_im_events triggers
                                                      (e.g.,
                                                      "com.apple.keylayout.ABC")
+
   ----------------------------------------------------------------------------------
 
 🐧 LINUX (LINUX)
