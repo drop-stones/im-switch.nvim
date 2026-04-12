@@ -102,14 +102,22 @@ function M.setup()
   local install_dir = path.get_install_dir()
   local cli_path = path.get_cli_path()
   local url = string.format(DOWNLOAD_URL, target)
-  local archive_path = install_dir .. "/im-switch.tar.gz"
+  local archive_path = vim.fs.joinpath(install_dir, "im-switch.tar.gz")
+
+  -- Preflight check for required tools
+  for _, tool in ipairs({ "curl", "tar" }) do
+    if vim.fn.executable(tool) ~= 1 then
+      notify.error(tool .. " is required but not found in PATH")
+      return
+    end
+  end
 
   -- Create install directory
   vim.fn.mkdir(install_dir, "p")
 
   -- Download
   print("im-switch.nvim: Downloading im-switch CLI from " .. url)
-  local result = system.run_system({ "curl", "-L", "-o", archive_path, url })
+  local result = system.run_system({ "curl", "-fSL", "-o", archive_path, url })
   if result.code ~= 0 then
     notify.error("Failed to download im-switch CLI: " .. result.stderr)
     return

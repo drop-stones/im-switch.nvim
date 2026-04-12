@@ -48,15 +48,15 @@ end
 ---Get the install directory for the im-switch CLI binary.
 ---@return string
 function M.get_install_dir()
-  local home = os.getenv("HOME") or os.getenv("USERPROFILE") or "~"
   local os_type = os_utils.get_os_type()
   if os_type == "windows" then
     local localappdata = os.getenv("LOCALAPPDATA")
     if localappdata then
-      return localappdata .. "\\im-switch.nvim"
+      return vim.fs.joinpath(localappdata, "im-switch.nvim")
     end
   end
-  return home .. "/.local/share/im-switch.nvim"
+  local home = os.getenv("HOME") or os.getenv("USERPROFILE") or "~"
+  return vim.fs.joinpath(home, ".local", "share", "im-switch.nvim")
 end
 
 ---Get the full path to the im-switch CLI binary.
@@ -65,9 +65,9 @@ function M.get_cli_path()
   local os_type = os_utils.get_os_type()
   local dir = M.get_install_dir()
   if os_type == "wsl" or os_type == "windows" then
-    return dir .. "/im-switch.exe"
+    return vim.fs.joinpath(dir, "im-switch.exe")
   end
-  return dir .. "/im-switch"
+  return vim.fs.joinpath(dir, "im-switch")
 end
 
 return M
