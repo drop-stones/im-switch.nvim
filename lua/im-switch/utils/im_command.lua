@@ -60,13 +60,36 @@ local function get_macos_command(action, im_value)
   return nil, string.format(ERRORS.invalid_action, "macOS", tostring(action))
 end
 
+---Check if user-configured custom commands are set for Linux.
+---@param opts table
+---@return boolean
+local function has_custom_commands(opts)
+  return opts.linux.get_im_command
+    and #opts.linux.get_im_command > 0
+    and opts.linux.set_im_command
+    and #opts.linux.set_im_command > 0
+end
+
 ---Generate the command for Linux to get/set input method.
----Uses the installed im-switch CLI if available, otherwise falls back to user-configured commands.
+---User-configured commands take priority over the im-switch CLI.
 ---@param action "get"|"set"
 ---@param im_value? string
 ---@param opts table
 ---@return string[]?, string?
 local function get_linux_command(action, im_value, opts)
+  -- User-configured commands take priority
+  if has_custom_commands(opts) then
+    if action == "get" then
+      return opts.linux.get_im_command
+    elseif action == "set" then
+      local command = vim.deepcopy(opts.linux.set_im_command)
+      table.insert(command, im_value)
+      return command
+    end
+    return nil, string.format(ERRORS.invalid_action, "Linux", tostring(action))
+  end
+
+  -- Fall back to im-switch CLI
   if is_cli_installed() then
     local cli = path.get_cli_path()
     if action == "get" then
@@ -77,15 +100,7 @@ local function get_linux_command(action, im_value, opts)
     return nil, string.format(ERRORS.invalid_action, "Linux", tostring(action))
   end
 
-  -- Fallback to user-configured commands
-  if action == "get" then
-    return opts.linux.get_im_command
-  elseif action == "set" then
-    local command = vim.deepcopy(opts.linux.set_im_command)
-    table.insert(command, im_value)
-    return command
-  end
-  return nil, string.format(ERRORS.invalid_action, "Linux", tostring(action))
+  return nil, "No im-switch CLI installed and no custom commands configured for Linux"
 end
 
 ---Generate the command to get/set input method based on OS and options.
