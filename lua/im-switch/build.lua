@@ -4,6 +4,7 @@ local path = require("im-switch.utils.path")
 local system = require("im-switch.utils.system")
 
 local DOWNLOAD_URL = "https://github.com/drop-stones/im-switch/releases/latest/download/im-switch-%s.tar.gz"
+local REQUIRED_VERSION = { 0, 1, 0 }
 
 local M = {}
 
@@ -36,8 +37,62 @@ function M.get_target_triple()
   return nil, "Unsupported OS for download: " .. tostring(os_type)
 end
 
+---Parse a semantic version string (e.g., "im-switch 0.1.0") into a table.
+---@param version_str string
+---@return number[]?
+function M.parse_version(version_str)
+  local major, minor, patch = version_str:match("(%d+)%.(%d+)%.(%d+)")
+  if major then
+    return { tonumber(major), tonumber(minor), tonumber(patch) }
+  end
+  return nil
+end
+
+---Compare two version tuples. Returns true if `a` >= `b`.
+---@param a number[]
+---@param b number[]
+---@return boolean
+function M.version_gte(a, b)
+  for i = 1, 3 do
+    if a[i] > b[i] then
+      return true
+    elseif a[i] < b[i] then
+      return false
+    end
+  end
+  return true
+end
+
+---Check if the installed CLI meets the required version.
+---@return boolean
+function M.is_version_satisfied()
+  local cli_path = path.get_cli_path()
+  if vim.fn.executable(cli_path) ~= 1 then
+    return false
+  end
+
+  local result = system.run_system({ cli_path, "--version" })
+  if result.code ~= 0 then
+    return false
+  end
+
+  local version = M.parse_version(vim.trim(result.stdout))
+  if not version then
+    return false
+  end
+
+  return M.version_gte(version, REQUIRED_VERSION)
+end
+
 ---Install the im-switch CLI binary from GitHub Releases.
 function M.setup()
+  if M.is_version_satisfied() then
+    local cli_path = path.get_cli_path()
+    local result = system.run_system({ cli_path, "--version" })
+    print("im-switch.nvim: " .. vim.trim(result.stdout) .. " is already installed")
+    return
+  end
+
   local target, err = M.get_target_triple()
   if err then
     notify.error("Failed to detect target: " .. err)
