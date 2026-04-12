@@ -142,6 +142,38 @@ local function check_os_options()
   end
 end
 
+---Check for deprecated options and stale artifacts from older versions.
+local function check_deprecations()
+  local opts = options.get()
+
+  -- Check for stale bin/ directory from the old embedded-Rust build
+  local old_bin_dir = utils.path.get_plugin_path("bin")
+  if vim.fn.isdirectory(old_bin_dir) == 1 then
+    vim.health.warn(
+      "Stale 'bin/' directory found: " .. old_bin_dir,
+      { "The CLI is now installed to " .. utils.path.get_install_dir(), "You can safely delete: " .. old_bin_dir }
+    )
+  else
+    vim.health.ok("No stale artifacts from previous versions")
+  end
+
+  -- Check for deprecated 'enabled' option
+  local deprecated_platforms = {}
+  for _, platform in ipairs({ "windows", "macos", "linux" }) do
+    if opts[platform] and opts[platform].enabled ~= nil then
+      table.insert(deprecated_platforms, platform .. ".enabled")
+    end
+  end
+  if #deprecated_platforms > 0 then
+    vim.health.warn(
+      "Deprecated option(s): " .. table.concat(deprecated_platforms, ", "),
+      { "The 'enabled' option will be removed in a future release", "Remove 'enabled' from your config and rely on 'default_im' to activate each platform" }
+    )
+  else
+    vim.health.ok("No deprecated options detected")
+  end
+end
+
 return {
   check = function()
     vim.health.start("im-switch.nvim")
@@ -149,5 +181,8 @@ return {
     check_nvim_version()
     check_os_options()
     check_binary()
+
+    vim.health.start("im-switch.nvim: migration")
+    check_deprecations()
   end,
 }
