@@ -11,8 +11,8 @@
 ---@class LinuxSettings
 ---@field enabled boolean
 ---@field default_im string
----@field get_im_command string[]
----@field set_im_command string[]
+---@field get_im_command? string[]
+---@field set_im_command? string[]
 
 --- Plugin options
 ---@class PluginOptions
