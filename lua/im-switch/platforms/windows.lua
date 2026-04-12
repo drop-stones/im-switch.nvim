@@ -32,7 +32,7 @@ end
 ---@return boolean
 function M.validate(opts)
   -- No additional validation needed for Windows
-  return opts.windows ~= nil
+  return true
 end
 
 ---@param opts table
@@ -47,7 +47,7 @@ function M.check_health(opts)
   if vim.fn.executable(cli_path) == 1 then
     vim.health.ok("im-switch CLI is installed at " .. cli_path)
   else
-    vim.health.error("im-switch CLI is not installed at " .. cli_path .. " (run :Lazy build im-switch.nvim)")
+    vim.health.error("im-switch CLI is not installed at " .. cli_path .. " (rebuild or reinstall the plugin with your plugin manager)")
   end
 end
 
