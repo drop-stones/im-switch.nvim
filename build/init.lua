@@ -1,9 +1,8 @@
--- Unload im-switch modules to load new files
-for module_name, _ in pairs(package.loaded) do
-  if module_name:match("^im%-switch") then
-    package.loaded[module_name] = nil
+-- Unload all im-switch modules before building to avoid stale state
+for name, _ in pairs(package.loaded) do
+  if name:match("^im%-switch") then
+    package.loaded[name] = nil
   end
 end
 
-local build = require("im-switch.build")
-build.setup()
+require("im-switch.build").setup()
