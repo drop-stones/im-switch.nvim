@@ -2,16 +2,6 @@ local notify = require("im-switch.utils.notify")
 local options = require("im-switch.options")
 local utils = require("im-switch.utils")
 
----Check if plenary.nvim is installed.
-local function check_plenary()
-  local ok, _ = pcall(require, "plenary")
-  if ok then
-    vim.health.ok("plenary.nvim is installed")
-  else
-    vim.health.error("plenary.nvim is not installed")
-  end
-end
-
 ---Check the current Neovim version.
 local function check_nvim_version()
   local version = vim.version()
@@ -177,7 +167,6 @@ end
 return {
   check = function()
     vim.health.start("im-switch.nvim")
-    check_plenary()
     check_nvim_version()
     check_os_options()
     check_binary()

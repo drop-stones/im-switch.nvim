@@ -13,7 +13,7 @@ It helps when you frequently switch between English and non-English IMs while co
 
 | OS            | Requirements |
 | ------------- | ------------ |
-| **All OS**    | Neovim >= **0.10.0**<br />[plenary.nvim](https://github.com/nvim-lua/plenary.nvim) |
+| **All OS**    | Neovim >= **0.10.0** |
 | **Linux**     | An input method framework (e.g., `fcitx5`, `ibus`) |
 
 > [!NOTE]
@@ -28,7 +28,6 @@ Install the plugin with your preferred package manager.
 ### [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 ```lua
-{ "nvim-lua/plenary.nvim", lazy = true },
 {
   "drop-stones/im-switch.nvim",
   event = "VeryLazy",

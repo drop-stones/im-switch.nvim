@@ -33,7 +33,7 @@ switch between English and non-English IMs while coding.
   -----------------------------------------------------------------------
   OS                                   Requirements
   ------------------------------------ ----------------------------------
-  All OS                               Neovim >= 0.10.0plenary.nvim
+  All OS                               Neovim >= 0.10.0
 
   Linux                                An input method framework (e.g.,
                                        fcitx5, ibus)
@@ -54,7 +54,6 @@ Install the plugin with your preferred package manager.
 LAZY.NVIM ~
 
 >lua
-    { "nvim-lua/plenary.nvim", lazy = true },
     {
       "drop-stones/im-switch.nvim",
       event = "VeryLazy",
