@@ -1,6 +1,6 @@
 local notify = require("im-switch.utils.notify")
-local os_utils = require("im-switch.utils.os")
 local path = require("im-switch.utils.path")
+local platforms = require("im-switch.platforms")
 local system = require("im-switch.utils.system")
 
 local DOWNLOAD_URL = "https://github.com/drop-stones/im-switch/releases/latest/download/im-switch-%s.tar.gz"
@@ -8,33 +8,32 @@ local REQUIRED_VERSION = { 0, 1, 0 }
 
 local M = {}
 
+---Get the CPU identifier for the current architecture.
+---@return string?, string?
+local function get_cpu()
+  local arch = jit and jit.arch:lower() or ""
+  if arch == "x64" or arch == "x86_64" then
+    return "x86_64"
+  elseif arch == "arm64" or arch == "aarch64" then
+    return "aarch64"
+  end
+  return nil, "Unsupported architecture: " .. arch
+end
+
 ---Get the Rust target triple for the current platform.
 ---@return string?, string?
 function M.get_target_triple()
-  local os_type, err = os_utils.get_os_type()
-  if err then
-    return nil, err
+  local cpu, cpu_err = get_cpu()
+  if cpu_err then
+    return nil, cpu_err
   end
 
-  local arch = jit and jit.arch:lower() or ""
-  local cpu
-  if arch == "x64" or arch == "x86_64" then
-    cpu = "x86_64"
-  elseif arch == "arm64" or arch == "aarch64" then
-    cpu = "aarch64"
-  else
-    return nil, "Unsupported architecture: " .. arch
+  local platform, plat_err = platforms.get_platform()
+  if plat_err then
+    return nil, plat_err
   end
 
-  if os_type == "windows" or os_type == "wsl" then
-    return cpu .. "-pc-windows-msvc"
-  elseif os_type == "macos" then
-    return cpu .. "-apple-darwin"
-  elseif os_type == "linux" then
-    return cpu .. "-unknown-linux-musl"
-  end
-
-  return nil, "Unsupported OS for download: " .. tostring(os_type)
+  return platform.target_triple(cpu)
 end
 
 ---Parse a semantic version string (e.g., "im-switch 0.1.0") into a table.
@@ -93,6 +92,12 @@ function M.setup()
     return
   end
 
+  local platform, plat_err = platforms.get_platform()
+  if plat_err then
+    notify.error("Failed to detect platform: " .. plat_err)
+    return
+  end
+
   local target, err = M.get_target_triple()
   if err then
     notify.error("Failed to detect target: " .. err)
@@ -130,15 +135,8 @@ function M.setup()
     return
   end
 
-  -- Set executable permissions (Unix only)
-  local os_type = os_utils.get_os_type()
-  if os_type ~= "windows" then
-    result = system.run_system({ "chmod", "+x", cli_path })
-    if result.code ~= 0 then
-      notify.error("Failed to set executable permissions: " .. result.stderr)
-      return
-    end
-  end
+  -- Platform-specific post-install (e.g., chmod +x on Unix)
+  platform.post_install(cli_path)
 
   -- Clean up archive
   os.remove(archive_path)

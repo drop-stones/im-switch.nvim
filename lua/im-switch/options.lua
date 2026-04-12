@@ -1,5 +1,4 @@
-local notify = require("im-switch.utils.notify")
-local os_utils = require("im-switch.utils.os")
+local platforms = require("im-switch.platforms")
 
 --- Default plugin options
 ---@type PluginOptions
@@ -12,36 +11,6 @@ local default_opts = {
 
   -- Events that restore the previously saved input method.
   restore_im_events = { "InsertEnter" },
-
-  -- Windows settings
-  windows = {
-    -- Enable or disable the plugin on Windows/WSL2.
-    enabled = false,
-  },
-
-  -- macOS settings
-  macos = {
-    -- Enable or disable the plugin on macOS.
-    enabled = false,
-
-    -- The input method set when `default_im_events` is triggered.
-    default_im = "",
-  },
-
-  -- Linux settings
-  linux = {
-    -- Enable or disable the plugin on Linux.
-    enabled = false,
-
-    -- The input method set when `default_im_events` is triggered.
-    default_im = "",
-
-    -- The command used to get the current input method when `save_im_state_events` is triggered.
-    get_im_command = {},
-
-    -- The command used to set the input method when `default_im_events` or `restore_im_events` is triggered.
-    set_im_command = {},
-  },
 }
 
 local M = {}
@@ -67,57 +36,27 @@ end
 ---@return boolean
 function M.validate_options(opts)
   if type(opts) ~= "table" then
-    notify.error("Options must be a table")
+    require("im-switch.utils.notify").error("Options must be a table")
     return false
   end
 
-  if opts.macos and opts.macos.enabled and not opts.macos.default_im then
-    notify.error("The 'macos.default_im' field must be defined when macos plugin is enabled")
-    return false
+  local platform = platforms.get_platform()
+  if not platform then
+    return true
   end
-  if opts.linux and opts.linux.enabled then
-    if not opts.linux.default_im then
-      notify.error("The 'linux.default_im' field must be defined when linux plugin is enabled")
-      return false
-    end
-    -- get_im_command/set_im_command are only required when im-switch CLI is not installed
-    local path = require("im-switch.utils.path")
-    if vim.fn.executable(path.get_cli_path()) ~= 1 then
-      for _, field in ipairs({ "get_im_command", "set_im_command" }) do
-        if not opts.linux[field] or #opts.linux[field] == 0 then
-          notify.error(
-            string.format(
-              "The 'linux.%s' field must be defined when linux plugin is enabled and im-switch CLI is not installed",
-              field
-            )
-          )
-          return false
-        end
-      end
-    end
-  end
-  return true
+
+  return platform.validate(opts)
 end
 
 ---Check if the plugin should be enabled for the current OS and options.
 ---@param opts table
 ---@return boolean
 function M.is_plugin_enabled(opts)
-  local os_type, err = os_utils.get_os_type()
-  if err then
+  local platform = platforms.get_platform()
+  if not platform then
     return false
   end
-
-  if os_type == "windows" or os_type == "wsl" then
-    return opts.windows and opts.windows.enabled
-  elseif os_type == "macos" then
-    return opts.macos and opts.macos.enabled and opts.macos.default_im ~= nil
-  elseif os_type == "linux" then
-    return opts.linux
-      and opts.linux.enabled
-      and opts.linux.default_im ~= nil
-  end
-  return false
+  return opts[platform.opts_key] ~= nil
 end
 
 return M
