@@ -26,8 +26,8 @@ end
 ---Check Linux-specific options and commands.
 ---@param opts table
 local function check_linux_config(opts)
-  if not opts.linux or not opts.linux.enabled then
-    vim.health.warn("Linux plugin is disabled")
+  if not opts.linux then
+    vim.health.warn("Linux plugin is not configured")
     return
   end
 
@@ -56,8 +56,8 @@ end
 ---Check macOS-specific options.
 ---@param opts table
 local function check_macos_config(opts)
-  if not opts.macos or not opts.macos.enabled then
-    vim.health.warn("macOS plugin is disabled")
+  if not opts.macos then
+    vim.health.warn("macOS plugin is not configured")
     return
   end
 
@@ -71,8 +71,8 @@ end
 ---Check Windows/WSL-specific options.
 ---@param opts table
 local function check_windows_config(opts)
-  if not opts.windows or not opts.windows.enabled then
-    vim.health.warn("Windows/WSL plugin is disabled")
+  if not opts.windows then
+    vim.health.warn("Windows/WSL plugin is not configured")
     return
   end
   vim.health.ok("Windows/WSL plugin is enabled")
@@ -94,12 +94,14 @@ local function check_binary()
     else
       vim.health.warn("im-switch CLI is not installed; using user-configured commands as fallback")
       local opts = options.get()
-      for _, key in ipairs({ "get_im_command", "set_im_command" }) do
-        local command_tbl = opts.linux[key]
-        if type(command_tbl) == "table" and #command_tbl > 0 then
-          check_command_exists(command_tbl[1])
-        else
-          vim.health.error("linux." .. key .. " is not configured")
+      if opts.linux then
+        for _, key in ipairs({ "get_im_command", "set_im_command" }) do
+          local command_tbl = opts.linux[key]
+          if type(command_tbl) == "table" and #command_tbl > 0 then
+            check_command_exists(command_tbl[1])
+          else
+            vim.health.error("linux." .. key .. " is not configured")
+          end
         end
       end
     end
@@ -132,10 +134,8 @@ local function check_os_options()
   end
 end
 
----Check for deprecated options and stale artifacts from older versions.
-local function check_deprecations()
-  local opts = options.get()
-
+---Check for stale artifacts from older versions.
+local function check_migration()
   -- Check for stale bin/ directory from the old embedded-Rust build
   local old_bin_dir = utils.path.get_plugin_path("bin")
   if vim.fn.isdirectory(old_bin_dir) == 1 then
@@ -145,22 +145,6 @@ local function check_deprecations()
     )
   else
     vim.health.ok("No stale artifacts from previous versions")
-  end
-
-  -- Check for deprecated 'enabled' option
-  local deprecated_platforms = {}
-  for _, platform in ipairs({ "windows", "macos", "linux" }) do
-    if opts[platform] and opts[platform].enabled ~= nil then
-      table.insert(deprecated_platforms, platform .. ".enabled")
-    end
-  end
-  if #deprecated_platforms > 0 then
-    vim.health.warn(
-      "Deprecated option(s): " .. table.concat(deprecated_platforms, ", "),
-      { "The 'enabled' option will be removed in a future release", "Remove 'enabled' from your config and rely on 'default_im' to activate each platform" }
-    )
-  else
-    vim.health.ok("No deprecated options detected")
   end
 end
 
@@ -172,6 +156,6 @@ return {
     check_binary()
 
     vim.health.start("im-switch.nvim: migration")
-    check_deprecations()
+    check_migration()
   end,
 }

@@ -12,36 +12,6 @@ local default_opts = {
 
   -- Events that restore the previously saved input method.
   restore_im_events = { "InsertEnter" },
-
-  -- Windows settings
-  windows = {
-    -- Enable or disable the plugin on Windows/WSL2.
-    enabled = false,
-  },
-
-  -- macOS settings
-  macos = {
-    -- Enable or disable the plugin on macOS.
-    enabled = false,
-
-    -- The input method set when `default_im_events` is triggered.
-    default_im = "",
-  },
-
-  -- Linux settings
-  linux = {
-    -- Enable or disable the plugin on Linux.
-    enabled = false,
-
-    -- The input method set when `default_im_events` is triggered.
-    default_im = "",
-
-    -- The command used to get the current input method when `save_im_state_events` is triggered.
-    get_im_command = {},
-
-    -- The command used to set the input method when `default_im_events` or `restore_im_events` is triggered.
-    set_im_command = {},
-  },
 }
 
 local M = {}
@@ -71,13 +41,14 @@ function M.validate_options(opts)
     return false
   end
 
-  if opts.macos and opts.macos.enabled and not opts.macos.default_im then
-    notify.error("The 'macos.default_im' field must be defined when macos plugin is enabled")
+  if opts.macos and (not opts.macos.default_im or opts.macos.default_im == "") then
+    notify.error("'macos.default_im' is required when macos is configured")
     return false
   end
-  if opts.linux and opts.linux.enabled then
-    if not opts.linux.default_im then
-      notify.error("The 'linux.default_im' field must be defined when linux plugin is enabled")
+
+  if opts.linux then
+    if not opts.linux.default_im or opts.linux.default_im == "" then
+      notify.error("'linux.default_im' is required when linux is configured")
       return false
     end
     -- get_im_command/set_im_command are only required when im-switch CLI is not installed
@@ -87,7 +58,7 @@ function M.validate_options(opts)
         if not opts.linux[field] or #opts.linux[field] == 0 then
           notify.error(
             string.format(
-              "The 'linux.%s' field must be defined when linux plugin is enabled and im-switch CLI is not installed",
+              "'linux.%s' is required when im-switch CLI is not installed",
               field
             )
           )
@@ -109,13 +80,11 @@ function M.is_plugin_enabled(opts)
   end
 
   if os_type == "windows" or os_type == "wsl" then
-    return opts.windows and opts.windows.enabled
+    return opts.windows ~= nil
   elseif os_type == "macos" then
-    return opts.macos and opts.macos.enabled and opts.macos.default_im ~= nil
+    return opts.macos ~= nil
   elseif os_type == "linux" then
-    return opts.linux
-      and opts.linux.enabled
-      and opts.linux.default_im ~= nil
+    return opts.linux ~= nil
   end
   return false
 end
