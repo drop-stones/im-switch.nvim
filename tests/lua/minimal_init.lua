@@ -1,6 +1,7 @@
 --[[
 minimal_init.lua
 Test bootstrap file for setting up the test environment.
+Ensures plenary.nvim is installed as a dev dependency for the test runner.
 ]]
 
 -- Get the plugin root directory
@@ -10,3 +11,11 @@ local plugin_root = vim.fn.fnamemodify(script_path, ":h:h:h")
 
 -- Prepend plugin root to runtimepath
 vim.opt.runtimepath:prepend(plugin_root)
+
+-- Install plenary.nvim (dev dependency for test runner) if not present
+local plenary_path = vim.fn.fnamemodify(plugin_root, ":h") .. "/plenary.nvim"
+if vim.fn.isdirectory(plenary_path) == 0 then
+  print("Installing plenary.nvim for testing...")
+  vim.fn.system({ "git", "clone", "--depth=1", "https://github.com/nvim-lua/plenary.nvim", plenary_path })
+end
+vim.opt.runtimepath:prepend(plenary_path)
