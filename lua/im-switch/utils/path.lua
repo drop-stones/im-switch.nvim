@@ -45,31 +45,29 @@ function M.get_plugin_path(...)
   end
 end
 
----Get the executable file extension for the current OS
+---Get the install directory for the im-switch CLI binary.
 ---@return string
-function M.get_executable_extension()
-  local os_type, err = os_utils.get_os_type()
-  if err then
-    notify.error(err)
-    return ""
+function M.get_install_dir()
+  local os_type = os_utils.get_os_type()
+  if os_type == "windows" then
+    local localappdata = os.getenv("LOCALAPPDATA")
+    if localappdata then
+      return vim.fs.joinpath(localappdata, "im-switch.nvim")
+    end
   end
-
-  if (os_type == "wsl") or (os_type == "windows") then
-    return ".exe"
-  else
-    return ""
-  end
+  local home = os.getenv("HOME") or os.getenv("USERPROFILE") or "~"
+  return vim.fs.joinpath(home, ".local", "share", "im-switch.nvim")
 end
 
----Ensure the given directory exists
----@param ... string
+---Get the full path to the im-switch CLI binary.
 ---@return string
-function M.ensure_directory_exists(...)
-  local dir = M.get_plugin_path(...)
-  if vim.fn.isdirectory(dir) == 0 then
-    vim.fn.mkdir(dir, "p")
+function M.get_cli_path()
+  local os_type = os_utils.get_os_type()
+  local dir = M.get_install_dir()
+  if os_type == "wsl" or os_type == "windows" then
+    return vim.fs.joinpath(dir, "im-switch.exe")
   end
-  return dir
+  return vim.fs.joinpath(dir, "im-switch")
 end
 
 return M

@@ -76,11 +76,23 @@ function M.validate_options(opts)
     return false
   end
   if opts.linux and opts.linux.enabled then
-    local required_fields = { "default_im", "get_im_command", "set_im_command" }
-    for _, field in ipairs(required_fields) do
-      if not opts.linux[field] then
-        notify.error(string.format("The 'linux.%s' field must be defined when linux plugin is enabled", field))
-        return false
+    if not opts.linux.default_im then
+      notify.error("The 'linux.default_im' field must be defined when linux plugin is enabled")
+      return false
+    end
+    -- get_im_command/set_im_command are only required when im-switch CLI is not installed
+    local path = require("im-switch.utils.path")
+    if vim.fn.executable(path.get_cli_path()) ~= 1 then
+      for _, field in ipairs({ "get_im_command", "set_im_command" }) do
+        if not opts.linux[field] or #opts.linux[field] == 0 then
+          notify.error(
+            string.format(
+              "The 'linux.%s' field must be defined when linux plugin is enabled and im-switch CLI is not installed",
+              field
+            )
+          )
+          return false
+        end
       end
     end
   end
@@ -104,8 +116,6 @@ function M.is_plugin_enabled(opts)
     return opts.linux
       and opts.linux.enabled
       and opts.linux.default_im ~= nil
-      and opts.linux.get_im_command ~= nil
-      and opts.linux.set_im_command ~= nil
   end
   return false
 end

@@ -14,8 +14,12 @@ It helps when you frequently switch between English and non-English IMs while co
 | OS            | Requirements |
 | ------------- | ------------ |
 | **All OS**    | Neovim >= **0.10.0**<br />[plenary.nvim](https://github.com/nvim-lua/plenary.nvim) |
-| **Windows/macOS** | `cargo` >= **1.93.0** _(optional; used to build `im-switch`)_ |
 | **Linux**     | An input method framework (e.g., `fcitx5`, `ibus`) |
+
+> [!NOTE]
+> The plugin automatically downloads the [`im-switch`](https://github.com/drop-stones/im-switch) CLI binary during installation.
+> No manual setup is required for Windows/WSL2/macOS.
+> On Linux, the CLI supports [fcitx5](https://github.com/fcitx/fcitx5) and [ibus](https://github.com/ibus/ibus) natively, but you can also use custom commands for other frameworks.
 
 ## 📦 Installation
 
@@ -24,7 +28,7 @@ Install the plugin with your preferred package manager.
 ### [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 ```lua
-{ "nvim-lua/plenary.nvim", lazy = true }, -- plenary.nvim is required
+{ "nvim-lua/plenary.nvim", lazy = true },
 {
   "drop-stones/im-switch.nvim",
   event = "VeryLazy",
@@ -49,31 +53,19 @@ require("im-switch").setup({
 
 ## 🔄 How it switches IM
 
-Neovim cannot switch IM directly, so this plugin uses an external method depending on your OS:
+Neovim cannot switch IM directly, so this plugin uses the [`im-switch`](https://github.com/drop-stones/im-switch) CLI:
 
-- Windows/macOS: uses a helper executable named `im-switch` (built with Cargo or downloaded as a prebuilt binary)
-- Linux: runs your configured IM framework commands (e.g. `fcitx5-remote`, `ibus`)
+- **Windows/WSL2**: Toggles IME on/off via `im-switch ime enable/disable`
+- **macOS**: Switches input source via `im-switch set <input_source_id>`
+- **Linux**: Uses `im-switch` CLI (fcitx5/ibus) or user-configured custom commands
 
-<details><summary>Windows/macOS helper details</summary>
+The CLI binary is automatically downloaded from [GitHub Releases](https://github.com/drop-stones/im-switch/releases) during plugin installation.
 
-- If `cargo` is available, `im-switch` is built automatically during installation/update.
-- Otherwise, a prebuilt binary is downloaded.
-
-> **WARNING:**
-> Prebuilt binaries are available only for:
->
-> | OS           | Architecture      |
-> | -------      | ----------------- |
-> | Windows/WSL2 | x86_64            |
-> | macOS        | aarch64, x86_64   |
->
-> If you need a different version, make sure cargo is installed—then the plugin will automatically build the executable during installation.
-
-> **NOTE:**
-> **WSL2** users must use the Windows prebuilt binary.
-> Building with `cargo` inside WSL2 is not supported.
-
-</details>
+| OS           | Architecture      |
+| ------------ | ----------------- |
+| Windows/WSL2 | x86_64, aarch64   |
+| macOS        | x86_64, aarch64   |
+| Linux        | x86_64, aarch64   |
 
 ## ⚙️  Configuration
 
@@ -116,19 +108,38 @@ Neovim cannot switch IM directly, so this plugin uses an external method dependi
 | --- | ---- | ------- | ----------- |
 | `linux.enabled` | `boolean` | `false` | Enable on Linux |
 | `linux.default_im` | `string` | `""` | IM to set when `default_im_events` triggers (framework-specific value) |
-| `linux.get_im_command` | `string[]` | `{}` | Command to get current IM when `save_im_state_events` triggers |
-| `linux.set_im_command` | `string[]` | `{}` | Command to set IM when `default_im_events` or `restore_im_events` triggers |
+| `linux.get_im_command` | `string[]?` | `{}` | Custom command to get current IM _(only needed for IM frameworks not supported by the CLI)_ |
+| `linux.set_im_command` | `string[]?` | `{}` | Custom command to set IM _(only needed for IM frameworks not supported by the CLI)_ |
+
+On Linux, the plugin resolves IM switching in this order:
+
+1. **Custom commands** — If `get_im_command`/`set_im_command` are configured, they are always used
+2. **[`im-switch`](https://github.com/drop-stones/im-switch) CLI** — If no custom commands are configured, the installed CLI is used (supports [fcitx5](https://github.com/fcitx/fcitx5) and [ibus](https://github.com/ibus/ibus))
 
 > [!TIP]
-> **Example (fcitx5)**
+> **Example: Linux with [fcitx5](https://github.com/fcitx/fcitx5) or [ibus](https://github.com/ibus/ibus) (using im-switch CLI)**
 >
 > ```lua
 > require("im-switch").setup({
 >   linux = {
 >     enabled = true,
 >     default_im = "keyboard-us",
->     get_im_command = { "fcitx5-remote", "-n" },
->     set_im_command = { "fcitx5-remote", "-s" },
+>   },
+> })
+> ```
+
+> [!TIP]
+> **Example: Linux with custom commands (for other IM frameworks)**
+>
+> If you use an IM framework not supported by the `im-switch` CLI, you can specify custom commands:
+>
+> ```lua
+> require("im-switch").setup({
+>   linux = {
+>     enabled = true,
+>     default_im = "default",
+>     get_im_command = { "my-im-tool", "get" },
+>     set_im_command = { "my-im-tool", "set" },
 >   },
 > })
 > ```
@@ -142,7 +153,7 @@ Neovim cannot switch IM directly, so this plugin uses an external method dependi
 
   -- Events that save the current input method.
   save_im_state_events = { "InsertLeavePre" },
-  
+
   -- Events that restore the previously saved input method.
   restore_im_events = { "InsertEnter" },
 
@@ -150,8 +161,8 @@ Neovim cannot switch IM directly, so this plugin uses an external method dependi
   windows = {
     -- Enable or disable the plugin on Windows/WSL2.
     enabled = false,
-  };
-  
+  },
+
   -- macOS settings
   macos = {
     -- Enable or disable the plugin on macOS.
@@ -160,7 +171,7 @@ Neovim cannot switch IM directly, so this plugin uses an external method dependi
     -- The input method set when `default_im_events` is triggered.
     default_im = "",
   },
-  
+
   -- Linux settings
   linux = {
     -- Enable or disable the plugin on Linux.
@@ -169,10 +180,12 @@ Neovim cannot switch IM directly, so this plugin uses an external method dependi
     -- The input method set when `default_im_events` is triggered.
     default_im = "",
 
-    -- The command used to get the current input method when `save_im_state_events` is triggered.
+    -- Custom command to get the current input method (optional).
+    -- If set, takes priority over the im-switch CLI.
     get_im_command = {},
 
-    -- The command used to set the input method when `default_im_events` or `restore_im_events` is triggered.
+    -- Custom command to set the input method (optional).
+    -- If set, takes priority over the im-switch CLI.
     set_im_command = {},
   },
 }

@@ -1,135 +1,149 @@
+local notify = require("im-switch.utils.notify")
 local os_utils = require("im-switch.utils.os")
 local path = require("im-switch.utils.path")
-local rust = require("im-switch.utils.rust")
 local system = require("im-switch.utils.system")
+
+local DOWNLOAD_URL = "https://github.com/drop-stones/im-switch/releases/latest/download/im-switch-%s.tar.gz"
+local REQUIRED_VERSION = { 0, 1, 0 }
 
 local M = {}
 
----Get the Rust target triple for the current environment
----@return string
-local function get_target_triple()
+---Get the Rust target triple for the current platform.
+---@return string?, string?
+function M.get_target_triple()
   local os_type, err = os_utils.get_os_type()
-  local arch = jit and jit.arch or "x64"
   if err then
-    error(err)
+    return nil, err
   end
 
-  if (os_type == "windows") or (os_type == "wsl") then
-    if arch == "x64" then
-      return "x86_64-pc-windows-msvc"
-    else
-      error("Unsupported architecture for windows: " .. arch)
-    end
+  local arch = jit and jit.arch:lower() or ""
+  local cpu
+  if arch == "x64" or arch == "x86_64" then
+    cpu = "x86_64"
+  elseif arch == "arm64" or arch == "aarch64" then
+    cpu = "aarch64"
+  else
+    return nil, "Unsupported architecture: " .. arch
+  end
+
+  if os_type == "windows" or os_type == "wsl" then
+    return cpu .. "-pc-windows-msvc"
   elseif os_type == "macos" then
-    if arch == "x64" then
-      return "x86_64-apple-darwin"
-    elseif arch == "arm64" then
-      return "aarch64-apple-darwin"
-    else
-      error("Unsupported architecture for macOS: " .. arch)
+    return cpu .. "-apple-darwin"
+  elseif os_type == "linux" then
+    return cpu .. "-unknown-linux-musl"
+  end
+
+  return nil, "Unsupported OS for download: " .. tostring(os_type)
+end
+
+---Parse a semantic version string (e.g., "im-switch 0.1.0") into a table.
+---@param version_str string
+---@return number[]?
+function M.parse_version(version_str)
+  local major, minor, patch = version_str:match("(%d+)%.(%d+)%.(%d+)")
+  if major then
+    return { tonumber(major), tonumber(minor), tonumber(patch) }
+  end
+  return nil
+end
+
+---Compare two version tuples. Returns true if `a` >= `b`.
+---@param a number[]
+---@param b number[]
+---@return boolean
+function M.version_gte(a, b)
+  for i = 1, 3 do
+    if a[i] > b[i] then
+      return true
+    elseif a[i] < b[i] then
+      return false
     end
   end
-  error("Unsupported OS type: " .. os_type)
+  return true
 end
 
----Get the nearest git tag for the current commit (HEAD)
----@return string
-local function get_release_version()
-  local result = system.run_system({ "git", "describe", "--tags", "--abbrev=0" })
-  if result.code ~= 0 or not result.stdout or #result.stdout == 0 then
-    error("Could not determine release version (git tag)")
+---Check if the installed CLI meets the required version.
+---@return boolean
+function M.is_version_satisfied()
+  local cli_path = path.get_cli_path()
+  if vim.fn.executable(cli_path) ~= 1 then
+    return false
   end
-  return vim.trim(result.stdout)
+
+  local result = system.run_system({ cli_path, "--version" })
+  if result.code ~= 0 then
+    return false
+  end
+
+  local version = M.parse_version(vim.trim(result.stdout))
+  if not version then
+    return false
+  end
+
+  return M.version_gte(version, REQUIRED_VERSION)
 end
 
----Build im-switch using cargo and copy the binary to bin/
-function M.build_with_cargo()
-  path.ensure_directory_exists("bin")
-  local ext = path.get_executable_extension()
-  local bin_path = path.get_plugin_path("bin", "im-switch" .. ext)
-  local target_path = path.get_plugin_path("target", "release", "im-switch" .. ext)
-
-  -- Build
-  local build_result = system.run_system({ "cargo", "build", "--release" })
-  if build_result.code ~= 0 then
-    error("cargo build failed: " .. (build_result.stderr or ""))
+---Install the im-switch CLI binary from GitHub Releases.
+function M.setup()
+  if M.is_version_satisfied() then
+    local cli_path = path.get_cli_path()
+    local result = system.run_system({ cli_path, "--version" })
+    print("im-switch.nvim: " .. vim.trim(result.stdout) .. " is already installed")
+    return
   end
 
-  -- Copy
-  local ok, err = vim.loop.fs_copyfile(target_path, bin_path)
-  if not ok then
-    error("Failed to copy built binary to bin/: " .. target_path .. " - " .. (err or "unknown error"))
-  end
-end
-
----Download and extract prebuilt im-switch binary to bin/
-function M.install_prebuilt_binary()
-  local version = get_release_version()
-  local triple = get_target_triple()
-  local bin_dir = path.ensure_directory_exists("bin")
-  local bin_path = path.get_plugin_path("bin", "im-switch" .. path.get_executable_extension())
-  local asset_name = string.format("im-switch-%s.tar.gz", triple)
-  local url =
-    string.format("https://github.com/drop-stones/im-switch.nvim/releases/download/%s/%s", version, asset_name)
-  local tarball_path = path.get_plugin_path("bin", asset_name)
-
-  local os_type, err = os_utils.get_os_type()
+  local target, err = M.get_target_triple()
   if err then
-    error(err)
+    notify.error("Failed to detect target: " .. err)
+    return
   end
+
+  local install_dir = path.get_install_dir()
+  local cli_path = path.get_cli_path()
+  local url = string.format(DOWNLOAD_URL, target)
+  local archive_path = vim.fs.joinpath(install_dir, "im-switch.tar.gz")
+
+  -- Preflight check for required tools
+  for _, tool in ipairs({ "curl", "tar" }) do
+    if vim.fn.executable(tool) ~= 1 then
+      notify.error(tool .. " is required but not found in PATH")
+      return
+    end
+  end
+
+  -- Create install directory
+  vim.fn.mkdir(install_dir, "p")
 
   -- Download
-  local download_result = system.run_system({ "curl", "-fsSL", "-o", tarball_path, url })
-  if download_result.code ~= 0 then
-    error("Failed to download prebuilt binary: " .. url .. " - " .. (download_result.stderr or ""))
+  print("im-switch.nvim: Downloading im-switch CLI from " .. url)
+  local result = system.run_system({ "curl", "-fSL", "-o", archive_path, url })
+  if result.code ~= 0 then
+    notify.error("Failed to download im-switch CLI: " .. result.stderr)
+    return
   end
 
-  -- Extract tar.gz
-  local extract_cmd
-  if os_type == "windows" then
-    extract_cmd = { "C:\\Windows\\System32\\tar.exe", "-xzvf", tarball_path, "-C", bin_dir }
-  else
-    extract_cmd = { "tar", "xzvf", tarball_path, "-C", bin_dir }
+  -- Extract
+  result = system.run_system({ "tar", "xzf", archive_path, "-C", install_dir })
+  if result.code ~= 0 then
+    notify.error("Failed to extract im-switch CLI: " .. result.stderr)
+    return
   end
 
-  local extract_result = system.run_system(extract_cmd)
-  if extract_result.code ~= 0 then
-    error("Failed to extract prebuilt binary: " .. tarball_path .. " - " .. (extract_result.stderr or ""))
-  end
-
-  local ok, rm_err = os.remove(tarball_path)
-  if not ok then
-    vim.notify(
-      "Failed to remove temporary archive file: " .. tarball_path .. " - " .. (rm_err or ""),
-      vim.log.levels.WARN
-    )
-  end
-
-  -- Set executable permission for non-Windows systems
+  -- Set executable permissions (Unix only)
+  local os_type = os_utils.get_os_type()
   if os_type ~= "windows" then
-    local chmod_result = system.run_system({ "chmod", "+x", bin_path })
-    if chmod_result.code ~= 0 then
-      error("Failed to set executable permission: " .. bin_path .. " - " .. (chmod_result.stderr or ""))
+    result = system.run_system({ "chmod", "+x", cli_path })
+    if result.code ~= 0 then
+      notify.error("Failed to set executable permissions: " .. result.stderr)
+      return
     end
   end
-end
 
----Main entry: build with cargo or install prebuilt binary
-function M.setup()
-  local os_type, err = os_utils.get_os_type()
-  if err then
-    error(err)
-  end
+  -- Clean up archive
+  os.remove(archive_path)
 
-  if (os_type == "windows") or (os_type == "macos") then
-    if rust.check_cargo_version() then
-      M.build_with_cargo()
-    else
-      M.install_prebuilt_binary()
-    end
-  elseif os_type == "wsl" then
-    M.install_prebuilt_binary()
-  end
+  print("im-switch.nvim: Successfully installed im-switch CLI to " .. cli_path)
 end
 
 return M
