@@ -1,4 +1,3 @@
-local Path = require("plenary.path")
 local notify = require("im-switch.utils.notify")
 local options = require("im-switch.options")
 local utils = require("im-switch.utils")
@@ -48,13 +47,18 @@ local function check_linux_config(opts)
     vim.health.error("linux.default_im is not configured")
   end
 
-  for _, key in ipairs({ "get_im_command", "set_im_command" }) do
-    local command_tbl = opts.linux[key]
-    if type(command_tbl) == "table" and #command_tbl > 0 then
-      vim.health.ok("linux." .. key .. " is set: " .. '"' .. table.concat(command_tbl, " ") .. '"')
-      check_command_exists(command_tbl[1])
-    else
-      vim.health.error("linux." .. key .. " is not configured")
+  local cli_path = utils.path.get_cli_path()
+  if vim.fn.executable(cli_path) == 1 then
+    vim.health.ok("im-switch CLI is installed; linux.get_im_command/set_im_command are not required")
+  else
+    for _, key in ipairs({ "get_im_command", "set_im_command" }) do
+      local command_tbl = opts.linux[key]
+      if type(command_tbl) == "table" and #command_tbl > 0 then
+        vim.health.ok("linux." .. key .. " is set: " .. '"' .. table.concat(command_tbl, " ") .. '"')
+        check_command_exists(command_tbl[1])
+      else
+        vim.health.error("linux." .. key .. " is not configured and im-switch CLI is not installed")
+      end
     end
   end
 end
@@ -84,27 +88,7 @@ local function check_windows_config(opts)
   vim.health.ok("Windows/WSL plugin is enabled")
 end
 
----Check the installed Cargo version.
-local function check_cargo_version()
-  local cargo_ok, cargo_msg = utils.rust.check_cargo_version()
-  if cargo_ok then
-    vim.health.ok(cargo_msg)
-  else
-    vim.health.warn(cargo_msg)
-  end
-end
-
----Extracts the command name from a given input
----@param command string[]|nil
----@return string|nil
-local function get_command(command)
-  if type(command) == "table" and #command > 0 then
-    return command[1]
-  end
-  return nil
-end
-
----Check the availability of the im-switch binary.
+---Check the availability of the im-switch CLI binary.
 local function check_binary()
   local os_type, err = utils.os.get_os_type()
   if err then
@@ -112,27 +96,28 @@ local function check_binary()
     return
   end
 
+  local cli_path = utils.path.get_cli_path()
+
   if os_type == "linux" then
-    local opts = options.get()
-    for _, key in ipairs({ "get_im_command", "set_im_command" }) do
-      local command = get_command(opts.linux[key])
-      if not command then
-        vim.health.error("Invalid command format of " .. key)
-      else
-        check_command_exists(command)
+    if vim.fn.executable(cli_path) == 1 then
+      vim.health.ok("im-switch CLI is installed at " .. cli_path)
+    else
+      vim.health.warn("im-switch CLI is not installed; using user-configured commands as fallback")
+      local opts = options.get()
+      for _, key in ipairs({ "get_im_command", "set_im_command" }) do
+        local command_tbl = opts.linux[key]
+        if type(command_tbl) == "table" and #command_tbl > 0 then
+          check_command_exists(command_tbl[1])
+        else
+          vim.health.error("linux." .. key .. " is not configured")
+        end
       end
     end
   else
-    if os_type ~= "wsl" then
-      check_cargo_version()
-    end
-
-    local ext = utils.path.get_executable_extension()
-    local exe_path = Path:new(utils.path.get_plugin_path("bin", "im-switch" .. ext))
-    if exe_path:exists() then
-      vim.health.ok("im-switch" .. ext .. " is installed correctly")
+    if vim.fn.executable(cli_path) == 1 then
+      vim.health.ok("im-switch CLI is installed at " .. cli_path)
     else
-      vim.health.error("im-switch" .. ext .. " is not installed correctly")
+      vim.health.error("im-switch CLI is not installed at " .. cli_path .. " (run :Lazy build im-switch.nvim)")
     end
   end
 end
