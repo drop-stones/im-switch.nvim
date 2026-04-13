@@ -12,4 +12,10 @@ function M.warn(msg)
   vim.notify(msg, vim.log.levels.WARN, { title = "im-switch.nvim" })
 end
 
+---Show an info notification.
+---@param msg string
+function M.info(msg)
+  vim.notify(msg, vim.log.levels.INFO, { title = "im-switch.nvim" })
+end
+
 return M
