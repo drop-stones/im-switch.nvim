@@ -86,9 +86,6 @@ end
 ---Install the im-switch CLI binary from GitHub Releases.
 function M.setup()
   if M.is_version_satisfied() then
-    local cli_path = path.get_cli_path()
-    local result = system.run_system({ cli_path, "--version" })
-    print("im-switch.nvim: " .. vim.trim(result.stdout) .. " is already installed")
     return
   end
 
@@ -121,7 +118,7 @@ function M.setup()
   vim.fn.mkdir(install_dir, "p")
 
   -- Download
-  print("im-switch.nvim: Downloading im-switch CLI from " .. url)
+  notify.info("Downloading im-switch CLI from " .. url)
   local result = system.run_system({ "curl", "-fSL", "-o", archive_path, url })
   if result.code ~= 0 then
     notify.error("Failed to download im-switch CLI: " .. result.stderr)
@@ -141,7 +138,7 @@ function M.setup()
   -- Clean up archive
   os.remove(archive_path)
 
-  print("im-switch.nvim: Successfully installed im-switch CLI to " .. cli_path)
+  notify.info("Successfully installed im-switch CLI to " .. cli_path)
 end
 
 return M
