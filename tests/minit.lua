@@ -1,7 +1,19 @@
 #!/usr/bin/env -S nvim -l
 
 vim.env.LAZY_STDPATH = ".tests"
-load(vim.fn.system("curl -s https://raw.githubusercontent.com/folke/lazy.nvim/main/bootstrap.lua"), "bootstrap.lua")()
+
+-- Pin to a specific commit for reproducibility
+local lazy_bootstrap_url =
+  "https://raw.githubusercontent.com/folke/lazy.nvim/306a05526ada86a7b30af95c5cc81ffba93fef97/bootstrap.lua"
+local bootstrap = vim.fn.system({ "curl", "-fsSL", lazy_bootstrap_url })
+if vim.v.shell_error ~= 0 or not bootstrap or bootstrap == "" then
+  error("Failed to download lazy.nvim bootstrap from: " .. lazy_bootstrap_url, 0)
+end
+local bootstrap_fn, load_err = load(bootstrap, "bootstrap.lua")
+if not bootstrap_fn then
+  error("Failed to load lazy.nvim bootstrap: " .. tostring(load_err), 0)
+end
+bootstrap_fn()
 
 require("lazy.minit").setup({
   spec = {
@@ -21,6 +33,7 @@ require("lazy.minit").setup({
 
 -- Busted-compatible assert shim built on MiniTest.expect (no luarocks needed)
 package.path = package.path .. ";" .. vim.uv.cwd() .. "/tests/?.lua"
+local MiniTest = require("mini.test")
 local expect = MiniTest.expect
 local _assert = assert
 
@@ -62,4 +75,4 @@ local Assert = {
 Assert.__index = Assert
 assert = setmetatable({}, Assert)
 
-require("mini.test").run()
+MiniTest.run()

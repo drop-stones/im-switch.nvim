@@ -24,19 +24,14 @@ jobs:
           version: stable
 
       - name: Run build (download CLI)
-        run: nvim -l -e "require('im-switch.build').setup()"
+        run: nvim --headless -c "set rtp+=." -c "lua require('im-switch.build').setup()" +qa
 
       - name: Verify CLI is installed
         shell: bash
         run: |
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            CLI_NAME="im-switch.exe"
-          else
-            CLI_NAME="im-switch"
-          fi
-          CLI_PATH=$(find . -name "$CLI_NAME" -type f | head -1)
-          if [ -z "$CLI_PATH" ]; then
-            echo "ERROR: CLI binary not found"
+          CLI_PATH=$(nvim --headless -c "set rtp+=." -c "lua print(require('im-switch.utils.path').get_cli_path())" +qa 2>&1 | tail -1)
+          if [ -z "$CLI_PATH" ] || [ ! -f "$CLI_PATH" ]; then
+            echo "ERROR: CLI binary not found at: $CLI_PATH"
             exit 1
           fi
           echo "Found CLI at: $CLI_PATH"
