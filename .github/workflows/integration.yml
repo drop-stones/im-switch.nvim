@@ -3,8 +3,7 @@ name: integration-test
 on:
   workflow_dispatch:
   push:
-    branches: [main, feature/*]
-    tags: [v*.*.*]
+    branches: [main, feat/*]
 
 jobs:
   build:
@@ -12,23 +11,12 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            target: x86_64-apple-darwin
-          - os: macos-latest
-            target: aarch64-apple-darwin
           - os: windows-latest
-            target: x86_64-pc-windows-msvc
+          - os: ubuntu-latest
     runs-on: ${{ matrix.os }}
-    name: Integration test on ${{ matrix.os }} (${{ matrix.target }})
+    name: Integration test on ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Setup Rust toolchain
-        uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          toolchain: stable
-          target: ${{ matrix.target }}
 
       - name: Install Neovim
         uses: rhysd/action-setup-vim@v1
@@ -36,35 +24,37 @@ jobs:
           neovim: true
           version: stable
 
-      - name: Pre-build and clean cargo to avoid test failures (Windows workaround)
-        if: runner.os == 'Windows'
-        run: |
-          cargo build --release
-          cargo clean
+      - name: Run build (download CLI)
+        run: nvim --headless -c "set rtp+=." -c "lua require('im-switch.build').setup()" +qa
 
-      - name: Wait for release asset
+      - name: Verify CLI is installed
         shell: bash
         run: |
-          set -e
-          TAG=$(git describe --tags --abbrev=0)
-          if [ -z "$TAG" ]; then
-            echo "Error: No tag found. Ensure the repository has at least one tag."
+          CLI_PATH=$(nvim --headless -c "set rtp+=." -c "lua print(require('im-switch.utils.path').get_cli_path())" +qa 2>&1 | tail -1)
+          if [ -z "$CLI_PATH" ] || [ ! -f "$CLI_PATH" ]; then
+            echo "ERROR: CLI binary not found at: $CLI_PATH"
             exit 1
           fi
-          ASSET="im-switch-${{ matrix.target }}.tar.gz"
-          URL="https://github.com/drop-stones/im-switch.nvim/releases/download/$TAG/$ASSET"
-          for i in {1..10}; do
-            echo "Checking $URL (attempt $i)..."
-            status=$(curl -s -o /dev/null -w "%{http_code}" -I "$URL")
-            if [ "$status" = "302" ] || [ "$status" = "200" ]; then
-              echo "Asset found!"
-              exit 0
-            fi
-            echo "Asset not found (status $status), waiting 30 seconds..."
-            sleep 30
-          done
-          echo "Asset $ASSET not found after waiting."
-          exit 1
+          echo "Found CLI at: $CLI_PATH"
+          "$CLI_PATH" --version
 
-      - name: Run integration test
-        run: nvim --headless -u tests/lua/minimal_init.lua -c "PlenaryBustedDirectory tests/lua/integration --sequential"
+      - name: Run checkhealth
+        shell: bash
+        run: |
+          LUA_SETUP='
+            local opts = {}
+            if vim.fn.has("mac") == 1 then
+              opts.macos = { default_im = "com.apple.keylayout.ABC" }
+            elseif vim.fn.has("win32") == 1 then
+              opts.windows = {}
+            else
+              opts.linux = { default_im = "keyboard-us" }
+            end
+            require("im-switch.options").setup(opts)
+          '
+          OUTPUT=$(nvim --headless -c "set rtp+=." -c "lua $LUA_SETUP" -c "checkhealth im-switch" -c "%print" +qa 2>&1)
+          echo "$OUTPUT"
+          if echo "$OUTPUT" | grep -q "ERROR"; then
+            echo "::error::checkhealth reported errors"
+            exit 1
+          fi

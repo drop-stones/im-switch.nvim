@@ -3,7 +3,7 @@ name: unittest
 on:
   workflow_dispatch:
   push:
-    branches: [main, feature/*]
+    branches: [main, feat/*]
 
 jobs:
   test:
@@ -18,4 +18,4 @@ jobs:
           version: stable
 
       - name: Run unit tests
-        run: nvim --headless -u tests/lua/minimal_init.lua -c "PlenaryBustedDirectory tests/lua/unittest"
+        run: bash scripts/test
