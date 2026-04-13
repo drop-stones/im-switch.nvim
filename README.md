@@ -67,49 +67,42 @@ The CLI binary is automatically downloaded from [GitHub Releases](https://github
 
 ## ⚙️  Configuration
 
-The plugin is activated per-platform by adding the corresponding settings table.
-
 ### 🔧 General options
 
-| Key                  | Type     | Default | Description |
-| -------------------- | -------- | ------- | ----------- |
-| `default_im_events`    | `string[]` | `{ "VimEnter", "FocusGained", "InsertLeave", "CmdlineLeave" }` | Events that set the **default IM** |
-| `save_im_state_events` | `string[]` | `{ "InsertLeavePre" }` | Events that **save** the current IM |
-| `restore_im_events`    | `string[]` | `{ "InsertEnter" }` | Events that **restore** the saved IM |
+| Key    | Type     | Default     | Description |
+| ------ | -------- | ----------- | ----------- |
+| `mode` | `string` | `"restore"` | `"restore"`: save/restore IM per buffer around insert mode. `"fixed"`: always use default IM. |
 
 > [!TIP]
-> **Always Switch to Default IM on Mode Change (disable save/restore)**
+> **Always Switch to Default IM (fixed mode)**
 >
 > ```lua
 > require("im-switch").setup({
->  save_im_state_events = {},
->  restore_im_events = {},
+>   mode = "fixed",
 > })
 > ```
 
-### 🖥️ OS options
+### 🖥️ Platform options
 
-#### 🪟 Windows/WSL2 (`windows`)
+#### 🪟 Windows/WSL2
 
-Add the `windows` table to enable the plugin on Windows/WSL2. No additional options are needed.
-
-```lua
-require("im-switch").setup({
-  windows = {},
-})
-```
+The plugin is always enabled on Windows/WSL2. No configuration is needed.
 
 #### 🍎 macOS (`macos`)
 
+Add the `macos` table to enable the plugin on macOS.
+
 | Key | Type | Default | Description |
 | --- | ---- | ------- | ----------- |
-| `macos.default_im` | `string` | — | IM to set when `default_im_events` triggers (e.g., `"com.apple.keylayout.ABC"`) |
+| `macos.default_im` | `string` | — | IM to set on InsertLeave (e.g., `"com.apple.keylayout.ABC"`) |
 
 #### 🐧 Linux (`linux`)
 
+Add the `linux` table to enable the plugin on Linux.
+
 | Key | Type | Default | Description |
 | --- | ---- | ------- | ----------- |
-| `linux.default_im` | `string` | — | IM to set when `default_im_events` triggers (framework-specific value) |
+| `linux.default_im` | `string` | — | IM to set on InsertLeave (framework-specific value) |
 | `linux.get_im_command` | `string[]?` | — | Custom command to get current IM _(only needed for IM frameworks not supported by the CLI)_ |
 | `linux.set_im_command` | `string[]?` | — | Custom command to set IM _(only needed for IM frameworks not supported by the CLI)_ |
 

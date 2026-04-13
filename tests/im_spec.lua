@@ -9,6 +9,7 @@ describe("im-switch.im", function()
   before_each(function()
     original_get_im_command = im_command.get_im_command
     original_vim_system = vim.system
+    vim.b.im_switch_last_state = nil
     ---@diagnostic disable-next-line: duplicate-set-field
     vim.system = function(_, _)
       return {

@@ -29,6 +29,25 @@ local function check_platform()
   platform.check_health(opts)
 end
 
+---Check for deprecated config options.
+local function check_deprecated_options()
+  local opts = options.get()
+  local deprecated = { "default_im_events", "save_im_state_events", "restore_im_events" }
+  local found = false
+  for _, key in ipairs(deprecated) do
+    if opts[key] ~= nil then
+      vim.health.warn(
+        "'" .. key .. "' is deprecated",
+        { "Event options have been removed. Use 'mode = \"restore\"' (default) or 'mode = \"fixed\"' instead." }
+      )
+      found = true
+    end
+  end
+  if not found then
+    vim.health.ok("No deprecated options found")
+  end
+end
+
 ---Check for stale artifacts from older versions.
 local function check_migration()
   local old_bin_dir = utils.path.get_plugin_path("bin")
@@ -49,6 +68,7 @@ return {
     check_platform()
 
     vim.health.start("im-switch.nvim: migration")
+    check_deprecated_options()
     check_migration()
   end,
 }

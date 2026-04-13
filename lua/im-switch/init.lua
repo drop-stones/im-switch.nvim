@@ -22,31 +22,26 @@ function M.setup(user_opts)
   -- Create an autocommand group to manage the events
   local group_id = vim.api.nvim_create_augroup("im-switch", { clear = true })
 
-  -- Set up autocommand to set the default input method when `default_im_events` is triggered
-  if #opts.default_im_events > 0 then
-    vim.api.nvim_create_autocmd(opts.default_im_events, {
-      callback = function()
-        im.set_default_im()
-      end,
-      group = group_id,
-    })
-  end
+  -- Always set default IM on these events
+  vim.api.nvim_create_autocmd({ "VimEnter", "FocusGained", "InsertLeave", "CmdlineLeave" }, {
+    callback = function()
+      im.set_default_im()
+    end,
+    group = group_id,
+  })
 
-  -- Set up autocommand to restore the previous input method when `restore_im_events` is triggered
-  if #opts.restore_im_events > 0 then
-    vim.api.nvim_create_autocmd(opts.restore_im_events, {
-      callback = function()
-        im.restore_im()
-      end,
-      group = group_id,
-    })
-  end
-
-  -- Set up autocommand to save the current input method when `save_im_state_events` is triggered
-  if #opts.save_im_state_events > 0 then
-    vim.api.nvim_create_autocmd(opts.save_im_state_events, {
+  -- In restore mode, save/restore IM state around insert mode
+  if opts.mode == "restore" then
+    vim.api.nvim_create_autocmd("InsertLeavePre", {
       callback = function()
         im.save_im_state()
+      end,
+      group = group_id,
+    })
+
+    vim.api.nvim_create_autocmd("InsertEnter", {
+      callback = function()
+        im.restore_im()
       end,
       group = group_id,
     })
