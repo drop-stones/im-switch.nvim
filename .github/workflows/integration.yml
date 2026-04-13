@@ -12,6 +12,7 @@ jobs:
         include:
           - os: macos-latest
           - os: windows-latest
+          - os: ubuntu-latest
     runs-on: ${{ matrix.os }}
     name: Integration test on ${{ matrix.os }}
     steps:
@@ -36,3 +37,24 @@ jobs:
           fi
           echo "Found CLI at: $CLI_PATH"
           "$CLI_PATH" --version
+
+      - name: Run checkhealth
+        shell: bash
+        run: |
+          LUA_SETUP='
+            local opts = {}
+            if vim.fn.has("mac") == 1 then
+              opts.macos = { default_im = "com.apple.keylayout.ABC" }
+            elseif vim.fn.has("win32") == 1 then
+              opts.windows = {}
+            else
+              opts.linux = { default_im = "keyboard-us" }
+            end
+            require("im-switch.options").setup(opts)
+          '
+          OUTPUT=$(nvim --headless -c "set rtp+=." -c "lua $LUA_SETUP" -c "checkhealth im-switch" -c "%print" +qa 2>&1)
+          echo "$OUTPUT"
+          if echo "$OUTPUT" | grep -q "ERROR"; then
+            echo "::error::checkhealth reported errors"
+            exit 1
+          fi
