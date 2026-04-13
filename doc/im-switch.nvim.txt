@@ -1,5 +1,5 @@
 *im-switch.nvim.txt*
-                                 For NVIM v0.8.0    Last change: 2026 April 12
+                                 For NVIM v0.8.0    Last change: 2026 April 13
 
 ==============================================================================
 Table of Contents                           *im-switch.nvim-table-of-contents*
