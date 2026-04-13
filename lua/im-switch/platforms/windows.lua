@@ -37,11 +37,7 @@ end
 
 ---@param opts table
 function M.check_health(opts)
-  if not opts.windows then
-    vim.health.warn("Windows/WSL plugin is not configured")
-    return
-  end
-  vim.health.ok("Windows/WSL plugin is enabled")
+  vim.health.ok("Windows/WSL plugin is enabled (always enabled on this platform)")
 
   local cli_path = path.get_cli_path()
   if vim.fn.executable(cli_path) == 1 then

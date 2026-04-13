@@ -37,9 +37,24 @@ Install the plugin with your preferred package manager.
 }
 ```
 
-## 🚀 Quick Start
+## ⚙️ Configuration
 
-Configure the plugin for your OS to switch to the default IM on InsertLeave.
+### General options
+
+| Key | Type | Default | Description |
+| --- | ---- | ------- | ----------- |
+| `mode` | `string` | `"restore"` | IM switching mode |
+
+Available modes:
+
+- **`"restore"`** (default) — Saves IM state per buffer on `InsertLeave` and restores it on `InsertEnter`.
+- **`"fixed"`** — Always switches to the default IM. No save/restore.
+
+### macOS
+
+| Key | Type | Required | Description |
+| --- | ---- | -------- | ----------- |
+| `macos.default_im` | `string` | Yes | Default IM to switch to when leaving insert/cmdline mode |
 
 ```lua
 require("im-switch").setup({
@@ -48,6 +63,33 @@ require("im-switch").setup({
   },
 })
 ```
+
+### Linux
+
+| Key | Type | Required | Description |
+| --- | ---- | -------- | ----------- |
+| `linux.default_im` | `string` | Yes | Default IM to switch to when leaving insert/cmdline mode |
+| `linux.get_im_command` | `string[]` | No | Custom command to get current IM (takes priority over CLI if set) |
+| `linux.set_im_command` | `string[]` | No | Custom command to set IM (takes priority over CLI if set) |
+
+```lua
+require("im-switch").setup({
+  linux = {
+    default_im = "keyboard-us",
+  },
+})
+```
+
+> [!TIP]
+> If your IM framework is not supported by the [`im-switch`](https://github.com/drop-stones/im-switch) CLI, you can use custom commands:
+>
+> ```lua
+> linux = {
+>   default_im = "default",
+>   get_im_command = { "my-im-tool", "get" },
+>   set_im_command = { "my-im-tool", "set" },
+> }
+> ```
 
 ## 🔄 How it switches IM
 
@@ -64,85 +106,6 @@ The CLI binary is automatically downloaded from [GitHub Releases](https://github
 | Windows/WSL2 | x86_64, aarch64   |
 | macOS        | x86_64, aarch64   |
 | Linux        | x86_64, aarch64   |
-
-## ⚙️  Configuration
-
-The plugin is activated per-platform by adding the corresponding settings table.
-
-### 🔧 General options
-
-| Key                  | Type     | Default | Description |
-| -------------------- | -------- | ------- | ----------- |
-| `default_im_events`    | `string[]` | `{ "VimEnter", "FocusGained", "InsertLeave", "CmdlineLeave" }` | Events that set the **default IM** |
-| `save_im_state_events` | `string[]` | `{ "InsertLeavePre" }` | Events that **save** the current IM |
-| `restore_im_events`    | `string[]` | `{ "InsertEnter" }` | Events that **restore** the saved IM |
-
-> [!TIP]
-> **Always Switch to Default IM on Mode Change (disable save/restore)**
->
-> ```lua
-> require("im-switch").setup({
->  save_im_state_events = {},
->  restore_im_events = {},
-> })
-> ```
-
-### 🖥️ OS options
-
-#### 🪟 Windows/WSL2 (`windows`)
-
-Add the `windows` table to enable the plugin on Windows/WSL2. No additional options are needed.
-
-```lua
-require("im-switch").setup({
-  windows = {},
-})
-```
-
-#### 🍎 macOS (`macos`)
-
-| Key | Type | Default | Description |
-| --- | ---- | ------- | ----------- |
-| `macos.default_im` | `string` | — | IM to set when `default_im_events` triggers (e.g., `"com.apple.keylayout.ABC"`) |
-
-#### 🐧 Linux (`linux`)
-
-| Key | Type | Default | Description |
-| --- | ---- | ------- | ----------- |
-| `linux.default_im` | `string` | — | IM to set when `default_im_events` triggers (framework-specific value) |
-| `linux.get_im_command` | `string[]?` | — | Custom command to get current IM _(only needed for IM frameworks not supported by the CLI)_ |
-| `linux.set_im_command` | `string[]?` | — | Custom command to set IM _(only needed for IM frameworks not supported by the CLI)_ |
-
-On Linux, the plugin resolves IM switching in this order:
-
-1. **Custom commands** — If `get_im_command`/`set_im_command` are configured, they are always used
-2. **[`im-switch`](https://github.com/drop-stones/im-switch) CLI** — If no custom commands are configured, the installed CLI is used (supports [fcitx5](https://github.com/fcitx/fcitx5) and [ibus](https://github.com/ibus/ibus))
-
-> [!TIP]
-> **Example: Linux with [fcitx5](https://github.com/fcitx/fcitx5) or [ibus](https://github.com/ibus/ibus) (using im-switch CLI)**
->
-> ```lua
-> require("im-switch").setup({
->   linux = {
->     default_im = "keyboard-us",
->   },
-> })
-> ```
-
-> [!TIP]
-> **Example: Linux with custom commands (for other IM frameworks)**
->
-> If you use an IM framework not supported by the `im-switch` CLI, you can specify custom commands:
->
-> ```lua
-> require("im-switch").setup({
->   linux = {
->     default_im = "default",
->     get_im_command = { "my-im-tool", "get" },
->     set_im_command = { "my-im-tool", "set" },
->   },
-> })
-> ```
 
 ## 🩺 Troubleshooting
 

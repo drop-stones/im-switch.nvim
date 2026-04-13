@@ -46,15 +46,9 @@ describe("im-switch.options", function()
         opts = {},
         expected = true,
       },
-      -- Windows
+      -- Windows (always valid, no config needed)
       {
-        desc = "Windows: valid config (empty table)",
-        os_type = "windows",
-        opts = { windows = {} },
-        expected = true,
-      },
-      {
-        desc = "Windows: no windows table",
+        desc = "Windows: no config",
         os_type = "windows",
         opts = {},
         expected = true,
@@ -82,6 +76,25 @@ describe("im-switch.options", function()
         desc = "Linux: no linux table (not configured)",
         os_type = "linux",
         opts = {},
+        expected = true,
+      },
+      -- Invalid mode
+      {
+        desc = "invalid mode",
+        os_type = "macos",
+        opts = { mode = "typo" },
+        expected = false,
+      },
+      {
+        desc = "valid mode: fixed",
+        os_type = "macos",
+        opts = { mode = "fixed" },
+        expected = true,
+      },
+      {
+        desc = "valid mode: restore",
+        os_type = "macos",
+        opts = { mode = "restore" },
         expected = true,
       },
       -- Non-table input
@@ -119,9 +132,9 @@ describe("im-switch.options", function()
         expected = false,
       },
       {
-        desc = "enabled for windows with empty table",
+        desc = "always enabled for windows (no config needed)",
         os_type = "windows",
-        opts = { windows = {} },
+        opts = {},
         expected = true,
       },
       {
@@ -148,15 +161,13 @@ describe("im-switch.options", function()
       options.setup({ macos = { default_im = "com.apple.keylayout.ABC" } })
       local opts = options.get()
       assert.equals("com.apple.keylayout.ABC", opts.macos.default_im)
-      -- Default event options should be preserved
-      assert.is_truthy(opts.default_im_events)
-      assert.is_true(#opts.default_im_events > 0)
+      assert.equals("restore", opts.mode)
     end)
 
-    it("allows overriding default events", function()
-      options.setup({ default_im_events = { "VimEnter" } })
+    it("allows setting fixed mode", function()
+      options.setup({ mode = "fixed" })
       local opts = options.get()
-      assert.are.same({ "VimEnter" }, opts.default_im_events)
+      assert.equals("fixed", opts.mode)
     end)
   end)
 end)

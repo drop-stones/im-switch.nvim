@@ -1,6 +1,3 @@
---- Windows settings (presence of this table enables the plugin on Windows/WSL2)
----@class WindowsSettings
-
 --- macOS settings
 ---@class MacosSettings
 ---@field default_im string
@@ -13,9 +10,6 @@
 
 --- Plugin options
 ---@class PluginOptions
----@field default_im_events string[] Events to set default input method
----@field save_im_state_events string[]  Events to save IM state
----@field restore_im_events string[] Events to restore IM state
----@field windows? WindowsSettings
+---@field mode? "restore"|"fixed" IM switching mode (default: "restore")
 ---@field macos? MacosSettings
 ---@field linux? LinuxSettings

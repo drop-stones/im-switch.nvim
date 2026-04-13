@@ -9,6 +9,7 @@ describe("im-switch.im", function()
   before_each(function()
     original_get_im_command = im_command.get_im_command
     original_vim_system = vim.system
+    vim.b.im_switch_last_state = nil
     ---@diagnostic disable-next-line: duplicate-set-field
     vim.system = function(_, _)
       return {
@@ -67,6 +68,59 @@ describe("im-switch.im", function()
       assert.equals(calls[1].action, "get")
       assert.equals(calls[2].action, "set")
       assert.equals(calls[2].im_value, "dummy")
+    end)
+
+    it("returns false when save_im_state fails", function()
+      ---@diagnostic disable-next-line: duplicate-set-field
+      im_command.get_im_command = function(action, _)
+        if action == "get" then
+          return nil, "command not found"
+        end
+        return { "echo", "set-im" }, nil
+      end
+      options.setup({ macos = { default_im = "dummy" } })
+      local ok = im.restore_im()
+      assert.is_false(ok)
+    end)
+  end)
+
+  describe("save_im_state (per-buffer)", function()
+    it("stores IM state independently per buffer", function()
+      ---@diagnostic disable-next-line: duplicate-set-field
+      im_command.get_im_command = function(action, im_value)
+        if action == "get" then
+          return { "echo", "get-im" }, nil
+        elseif action == "set" then
+          return { "echo", "set-im", im_value }, nil
+        end
+      end
+      options.setup({ macos = { default_im = "dummy" } })
+
+      -- Save state in buffer 1
+      local buf1 = vim.api.nvim_get_current_buf()
+      ---@diagnostic disable-next-line: duplicate-set-field
+      vim.system = function(_, _)
+        return { wait = function() return { code = 0, stdout = "im-jp\n", stderr = "" } end }
+      end
+      im.save_im_state()
+      assert.equals("im-jp", vim.b[buf1].im_switch_last_state)
+
+      -- Create buffer 2 and save different state
+      local buf2 = vim.api.nvim_create_buf(true, false)
+      vim.api.nvim_set_current_buf(buf2)
+      ---@diagnostic disable-next-line: duplicate-set-field
+      vim.system = function(_, _)
+        return { wait = function() return { code = 0, stdout = "im-en\n", stderr = "" } end }
+      end
+      im.save_im_state()
+      assert.equals("im-en", vim.b[buf2].im_switch_last_state)
+
+      -- Verify buffer 1 still has its own state
+      assert.equals("im-jp", vim.b[buf1].im_switch_last_state)
+
+      -- Cleanup
+      vim.api.nvim_set_current_buf(buf1)
+      vim.api.nvim_buf_delete(buf2, { force = true })
     end)
   end)
 end)

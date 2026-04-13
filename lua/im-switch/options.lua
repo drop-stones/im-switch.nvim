@@ -3,14 +3,7 @@ local platforms = require("im-switch.platforms")
 --- Default plugin options
 ---@type PluginOptions
 local default_opts = {
-  -- Events that set the default input method.
-  default_im_events = { "VimEnter", "FocusGained", "InsertLeave", "CmdlineLeave" },
-
-  -- Events that save the current input method state.
-  save_im_state_events = { "InsertLeavePre" },
-
-  -- Events that restore the previously saved input method.
-  restore_im_events = { "InsertEnter" },
+  mode = "restore",
 }
 
 local M = {}
@@ -40,6 +33,12 @@ function M.validate_options(opts)
     return false
   end
 
+  local valid_modes = { restore = true, fixed = true }
+  if opts.mode ~= nil and not valid_modes[opts.mode] then
+    require("im-switch.utils.notify").error("Invalid mode: '" .. tostring(opts.mode) .. "' (expected 'restore' or 'fixed')")
+    return false
+  end
+
   local platform = platforms.get_platform()
   if not platform then
     return true
@@ -56,6 +55,11 @@ function M.is_plugin_enabled(opts)
   if not platform then
     return false
   end
+  -- Windows/WSL: always enabled (no user config needed)
+  if platform.opts_key == "windows" then
+    return true
+  end
+  -- macOS/Linux: enabled when platform table is present
   return opts[platform.opts_key] ~= nil
 end
 
