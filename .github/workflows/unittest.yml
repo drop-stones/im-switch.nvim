@@ -3,7 +3,6 @@ name: unittest
 on:
   workflow_dispatch:
   push:
-    branches: [main, feat/*]
 
 jobs:
   test:

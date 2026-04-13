@@ -3,7 +3,6 @@ name: integration-test
 on:
   workflow_dispatch:
   push:
-    branches: [main, feat/*]
 
 jobs:
   build:
