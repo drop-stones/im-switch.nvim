@@ -47,7 +47,9 @@ end
 function M.restore_im()
   -- If no previous state for this buffer, get current IM and save it
   if not vim.b.im_switch_last_state then
-    M.save_im_state()
+    if not M.save_im_state() then
+      return false
+    end
   end
 
   local command, err = im_command.get_im_command("set", vim.b.im_switch_last_state)

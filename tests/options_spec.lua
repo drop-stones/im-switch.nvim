@@ -78,6 +78,25 @@ describe("im-switch.options", function()
         opts = {},
         expected = true,
       },
+      -- Invalid mode
+      {
+        desc = "invalid mode",
+        os_type = "macos",
+        opts = { mode = "typo" },
+        expected = false,
+      },
+      {
+        desc = "valid mode: fixed",
+        os_type = "macos",
+        opts = { mode = "fixed" },
+        expected = true,
+      },
+      {
+        desc = "valid mode: restore",
+        os_type = "macos",
+        opts = { mode = "restore" },
+        expected = true,
+      },
       -- Non-table input
       {
         desc = "non-table input",
