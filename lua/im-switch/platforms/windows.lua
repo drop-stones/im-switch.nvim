@@ -13,10 +13,12 @@ function M.get_im_command(action, im_value, _opts)
   if action == "get" then
     return { cli, "ime", "get" }
   elseif action == "set" then
-    if im_value == "enabled" then
-      return { cli, "ime", "enable" }
+    if im_value == "on" then
+      return { cli, "ime", "on" }
+    elseif im_value == "off" then
+      return { cli, "ime", "off" }
     else
-      return { cli, "ime", "disable" }
+      return nil, "Unknown IME state: " .. tostring(im_value) .. " (expected 'on' or 'off')"
     end
   end
   return nil, "Unsupported action for Windows/WSL: " .. tostring(action)
@@ -25,7 +27,7 @@ end
 ---@param _opts table
 ---@return string
 function M.default_im_value(_opts)
-  return "disabled"
+  return "off"
 end
 
 ---@param opts table
