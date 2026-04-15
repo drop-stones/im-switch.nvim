@@ -64,6 +64,15 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       expected = { "C:\\im-switch.exe", "ime", "off" },
     },
     {
+      desc = "windows set with unknown im_value",
+      os_type = "windows",
+      action = "set",
+      im_value = "enabled",
+      cli_path = "C:\\im-switch.exe",
+      opts = { windows = {}, macos = {}, linux = {} },
+      err = "Unknown IME state: enabled (expected 'on' or 'off')",
+    },
+    {
       desc = "windows invalid action",
       os_type = "windows",
       action = "invalid",
@@ -108,6 +117,15 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       cli_path = "/mnt/c/im-switch.exe",
       opts = { windows = {}, macos = {}, linux = {} },
       expected = { "/mnt/c/im-switch.exe", "ime", "off" },
+    },
+    {
+      desc = "wsl set with unknown im_value",
+      os_type = "wsl",
+      action = "set",
+      im_value = "disabled",
+      cli_path = "/mnt/c/im-switch.exe",
+      opts = { windows = {}, macos = {}, linux = {} },
+      err = "Unknown IME state: disabled (expected 'on' or 'off')",
     },
     {
       desc = "wsl invalid action",
