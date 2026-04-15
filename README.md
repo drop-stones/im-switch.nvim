@@ -95,7 +95,7 @@ require("im-switch").setup({
 
 Neovim cannot switch IM directly, so this plugin uses the [`im-switch`](https://github.com/drop-stones/im-switch) CLI:
 
-- **Windows/WSL2**: Toggles IME on/off via `im-switch ime enable/disable`
+- **Windows/WSL2**: Toggles IME on/off via `im-switch ime on/off`
 - **macOS**: Switches input source via `im-switch set <input_source_id>`
 - **Linux**: Uses `im-switch` CLI (fcitx5/ibus) or user-configured custom commands
 

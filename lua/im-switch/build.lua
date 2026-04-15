@@ -4,7 +4,7 @@ local platforms = require("im-switch.platforms")
 local system = require("im-switch.utils.system")
 
 local DOWNLOAD_URL = "https://github.com/drop-stones/im-switch/releases/latest/download/im-switch-%s.tar.gz"
-local REQUIRED_VERSION = { 0, 1, 0 }
+local REQUIRED_VERSION = { 0, 1, 1 }
 
 local M = {}
 
