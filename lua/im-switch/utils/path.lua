@@ -66,4 +66,16 @@ function M.get_cli_path()
   return vim.fs.joinpath(dir, "im-switch")
 end
 
+---Get the path to the native Linux client used by the WSL2 fast path.
+---@return string
+function M.get_wsl2_client_path()
+  return vim.fs.joinpath(M.get_install_dir(), "im-switch")
+end
+
+---Get the path to the Windows server used by the WSL2 fast path.
+---@return string
+function M.get_wsl2_server_path()
+  return vim.fs.joinpath(M.get_install_dir(), "im-switch.exe")
+end
+
 return M

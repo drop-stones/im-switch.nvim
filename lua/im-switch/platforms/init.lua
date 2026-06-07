@@ -10,8 +10,10 @@ function M.get_platform()
     return nil, err
   end
 
-  if os_type == "windows" or os_type == "wsl" then
+  if os_type == "windows" then
     return require("im-switch.platforms.windows")
+  elseif os_type == "wsl" then
+    return require("im-switch.platforms.wsl2")
   elseif os_type == "macos" then
     return require("im-switch.platforms.macos")
   elseif os_type == "linux" then
