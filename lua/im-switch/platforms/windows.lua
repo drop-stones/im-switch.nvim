@@ -3,6 +3,9 @@ local path = require("im-switch.utils.path")
 local M = {}
 
 M.opts_key = "windows"
+-- Windows/WSL control the IME with no required config, so the plugin is always
+-- enabled on these platforms (see options.is_plugin_enabled).
+M.always_enabled = true
 
 ---@param action "get"|"set"
 ---@param im_value? string

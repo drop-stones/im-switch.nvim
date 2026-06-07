@@ -78,6 +78,37 @@ describe("im-switch.options", function()
         opts = {},
         expected = true,
       },
+      -- WSL2 fast-path option
+      {
+        desc = "WSL2: server = true",
+        os_type = "wsl",
+        opts = { wsl2 = { server = true } },
+        expected = true,
+      },
+      {
+        desc = "WSL2: server = false",
+        os_type = "wsl",
+        opts = { wsl2 = { server = false } },
+        expected = true,
+      },
+      {
+        desc = "WSL2: no wsl2 table (always valid)",
+        os_type = "wsl",
+        opts = {},
+        expected = true,
+      },
+      {
+        desc = "WSL2: server is not a boolean",
+        os_type = "wsl",
+        opts = { wsl2 = { server = "yes" } },
+        expected = false,
+      },
+      {
+        desc = "WSL2: wsl2 is not a table",
+        os_type = "wsl",
+        opts = { wsl2 = "invalid" },
+        expected = false,
+      },
       -- Invalid mode
       {
         desc = "invalid mode",
@@ -134,6 +165,12 @@ describe("im-switch.options", function()
       {
         desc = "always enabled for windows (no config needed)",
         os_type = "windows",
+        opts = {},
+        expected = true,
+      },
+      {
+        desc = "always enabled for WSL (no config needed)",
+        os_type = "wsl",
         opts = {},
         expected = true,
       },

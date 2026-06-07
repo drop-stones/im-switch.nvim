@@ -39,6 +39,17 @@ function M.validate_options(opts)
     return false
   end
 
+  if opts.wsl2 ~= nil then
+    if type(opts.wsl2) ~= "table" then
+      require("im-switch.utils.notify").error("'wsl2' must be a table")
+      return false
+    end
+    if opts.wsl2.server ~= nil and type(opts.wsl2.server) ~= "boolean" then
+      require("im-switch.utils.notify").error("'wsl2.server' must be a boolean")
+      return false
+    end
+  end
+
   local platform = platforms.get_platform()
   if not platform then
     return true
@@ -55,11 +66,11 @@ function M.is_plugin_enabled(opts)
   if not platform then
     return false
   end
-  -- Windows/WSL: always enabled (no user config needed)
-  if platform.opts_key == "windows" then
+  -- Platforms with no required config (Windows/WSL2) are always enabled.
+  if platform.always_enabled then
     return true
   end
-  -- macOS/Linux: enabled when platform table is present
+  -- macOS/Linux: enabled when their settings table is present.
   return opts[platform.opts_key] ~= nil
 end
 
