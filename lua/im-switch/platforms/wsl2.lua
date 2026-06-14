@@ -9,6 +9,15 @@ local M = setmetatable({}, { __index = windows })
 M.opts_key = "wsl2"
 M.always_enabled = true
 
+---Escape a string for safe embedding inside single quotes in a shell command.
+---A literal `'` (a valid character in Unix paths) is rewritten as `'\''`, which
+---closes the quote, inserts an escaped quote, then reopens it.
+---@param s string
+---@return string
+local function sh_quote(s)
+  return (s:gsub("'", "'\\''"))
+end
+
 ---@param opts table
 ---@return boolean
 local function fast_path_enabled(opts)
@@ -41,8 +50,8 @@ function M.get_im_command(action, im_value, opts)
   -- Forward to the loopback daemon via the Linux client. On transport failure
   -- (exit 2 = daemon unreachable) run the Windows server directly and (re)start
   -- the daemon. Self-contained so the generic runner needs no special-casing.
-  local client = path.get_wsl2_client_path()
-  local server = path.get_wsl2_server_path()
+  local client = sh_quote(path.get_wsl2_client_path())
+  local server = sh_quote(path.get_wsl2_server_path())
   local script = string.format(
     "'%s' remote ime %s; rc=$?; [ \"$rc\" = 2 ] && { setsid '%s' serve >/dev/null 2>&1 </dev/null & exec '%s' ime %s; }; exit $rc",
     client,

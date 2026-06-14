@@ -75,6 +75,22 @@ describe("im-switch.platforms.wsl2", function()
       assert.is_nil(cmd)
       assert.is_true(err:find("Unknown IME state", 1, true) ~= nil)
     end)
+
+    it("escapes single quotes in the install path", function()
+      ---@diagnostic disable: duplicate-set-field
+      path.get_wsl2_client_path = function()
+        return "/home/o'brien/im-switch"
+      end
+      path.get_wsl2_server_path = function()
+        return "/home/o'brien/im-switch.exe"
+      end
+      ---@diagnostic enable: duplicate-set-field
+      local cmd = wsl2.get_im_command("get", nil, opts)
+      local s = cmd[3]
+      -- The `'` is closed, escaped, then reopened: '\''
+      assert.is_true(s:find("'/home/o'\\''brien/im-switch' remote ime get", 1, true) ~= nil)
+      assert.is_true(s:find("exec '/home/o'\\''brien/im-switch.exe' ime get", 1, true) ~= nil)
+    end)
   end)
 
   describe("download_plan", function()
