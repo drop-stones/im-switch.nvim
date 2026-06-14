@@ -41,15 +41,18 @@ function M.validate_options(opts)
     return false
   end
 
-  if opts.wsl2 ~= nil then
-    if type(opts.wsl2) ~= "table" then
-      require("im-switch.utils.notify").error("'wsl2' must be a table")
+  -- Platform settings, when present, must be tables. (Guard before
+  -- platform.validate, which indexes these and would otherwise throw on a
+  -- non-table value such as a number or boolean.)
+  for _, key in ipairs({ "macos", "linux", "wsl2" }) do
+    if opts[key] ~= nil and type(opts[key]) ~= "table" then
+      require("im-switch.utils.notify").error("'" .. key .. "' must be a table")
       return false
     end
-    if opts.wsl2.server ~= nil and type(opts.wsl2.server) ~= "boolean" then
-      require("im-switch.utils.notify").error("'wsl2.server' must be a boolean")
-      return false
-    end
+  end
+  if opts.wsl2 ~= nil and opts.wsl2.server ~= nil and type(opts.wsl2.server) ~= "boolean" then
+    require("im-switch.utils.notify").error("'wsl2.server' must be a boolean")
+    return false
   end
 
   local platform = platforms.get_platform()

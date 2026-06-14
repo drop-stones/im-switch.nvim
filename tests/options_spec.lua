@@ -46,6 +46,12 @@ describe("im-switch.options", function()
         opts = {},
         expected = true,
       },
+      {
+        desc = "macOS: macos is not a table (number)",
+        os_type = "macos",
+        opts = { macos = 123 },
+        expected = false,
+      },
       -- Windows (always valid, no config needed)
       {
         desc = "Windows: no config",
@@ -77,6 +83,12 @@ describe("im-switch.options", function()
         os_type = "linux",
         opts = {},
         expected = true,
+      },
+      {
+        desc = "Linux: linux is not a table (boolean)",
+        os_type = "linux",
+        opts = { linux = true },
+        expected = false,
       },
       -- WSL2 fast-path option
       {
