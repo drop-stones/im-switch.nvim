@@ -23,7 +23,7 @@ function M.setup(user_opts)
   local group_id = vim.api.nvim_create_augroup("im-switch", { clear = true })
 
   -- Always set default IM on these events
-  vim.api.nvim_create_autocmd({ "VimEnter", "FocusGained", "InsertLeave", "CmdlineLeave" }, {
+  vim.api.nvim_create_autocmd({ "InsertLeave", "CmdlineLeave" }, {
     callback = function()
       im.set_default_im()
     end,

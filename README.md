@@ -30,12 +30,18 @@ Install the plugin with your preferred package manager.
 ```lua
 {
   "drop-stones/im-switch.nvim",
-  event = "VeryLazy",
+  event = { "InsertEnter", "CmdlineEnter" },
   opts = {
     -- your configurations
   }
 }
 ```
+
+> [!NOTE]
+> The plugin only reacts to editing-mode transitions — `InsertLeave`/`CmdlineLeave` (and, in `restore`
+> mode, `InsertEnter`/`InsertLeavePre`) — so it is safe to load it as late as the first time you type.
+> Loading on `InsertEnter` and `CmdlineEnter` covers both insert and command-line input. You are free to
+> pick any other lazy-loading trigger that fits your workflow.
 
 ## ⚙️ Configuration
 
