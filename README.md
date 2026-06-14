@@ -91,6 +91,37 @@ require("im-switch").setup({
 > }
 > ```
 
+### WSL2
+
+| Key | Type | Required | Description |
+| --- | ---- | -------- | ----------- |
+| `wsl2.server` | `boolean` | No | Opt into the loopback IPC fast path (default: `false`) |
+
+On WSL the plugin controls the **Windows** IME with no configuration required.
+By default each switch runs `im-switch.exe` through WSL interop, which adds about 60 ms of process-startup latency.
+Set `wsl2.server = true` to enable the **loopback IPC fast path**: a long-lived Windows daemon is started once and each
+switch is forwarded to it over TCP (about 1–2 ms instead of 60 ms), with a transparent fallback to a direct call if the daemon is unreachable.
+
+```lua
+require("im-switch").setup({
+  wsl2 = {
+    server = true,
+  },
+})
+```
+
+> [!NOTE]
+> The fast path requires **WSL2 mirrored networking mode** (Windows 11 22H2+),
+> enabled in `C:\Users\<user>\.wslconfig` (run `wsl --shutdown` after editing):
+>
+> ```ini
+> [wsl2]
+> networkingMode=mirrored
+>
+> [experimental]
+> hostAddressLoopback=true
+> ```
+
 ## 🔄 How it switches IM
 
 Neovim cannot switch IM directly, so this plugin uses the [`im-switch`](https://github.com/drop-stones/im-switch) CLI:

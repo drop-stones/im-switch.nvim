@@ -18,7 +18,9 @@ local function get_plugin_root_path()
   if result.code ~= 0 then
     -- Fallback: this file is at lua/im-switch/utils/path.lua, so root is 3 levels up
     local fallback = vim.fn.fnamemodify(this_dir, ":h:h:h")
-    notify.warn("Failed to detect plugin root (git rev-parse failed in " .. this_dir .. "), using fallback: " .. fallback)
+    notify.warn(
+      "Failed to detect plugin root (git rev-parse failed in " .. this_dir .. "), using fallback: " .. fallback
+    )
     cached_plugin_root_path = fallback
     return cached_plugin_root_path
   end
@@ -64,6 +66,18 @@ function M.get_cli_path()
     return vim.fs.joinpath(dir, "im-switch.exe")
   end
   return vim.fs.joinpath(dir, "im-switch")
+end
+
+---Get the path to the native Linux client used by the WSL2 fast path.
+---@return string
+function M.get_wsl2_client_path()
+  return vim.fs.joinpath(M.get_install_dir(), "im-switch")
+end
+
+---Get the path to the Windows server used by the WSL2 fast path.
+---@return string
+function M.get_wsl2_server_path()
+  return vim.fs.joinpath(M.get_install_dir(), "im-switch.exe")
 end
 
 return M

@@ -3,9 +3,9 @@ options_spec.lua
 Unit tests for im-switch.options: validation, plugin activation, and setup.
 ]]
 
+local im_command = require("im-switch.utils.im_command")
 local options = require("im-switch.options")
 local os_utils = require("im-switch.utils.os")
-local im_command = require("im-switch.utils.im_command")
 
 describe("im-switch.options", function()
   local original_get_os_type
@@ -46,6 +46,12 @@ describe("im-switch.options", function()
         opts = {},
         expected = true,
       },
+      {
+        desc = "macOS: macos is not a table (number)",
+        os_type = "macos",
+        opts = { macos = 123 },
+        expected = false,
+      },
       -- Windows (always valid, no config needed)
       {
         desc = "Windows: no config",
@@ -77,6 +83,43 @@ describe("im-switch.options", function()
         os_type = "linux",
         opts = {},
         expected = true,
+      },
+      {
+        desc = "Linux: linux is not a table (boolean)",
+        os_type = "linux",
+        opts = { linux = true },
+        expected = false,
+      },
+      -- WSL2 fast-path option
+      {
+        desc = "WSL2: server = true",
+        os_type = "wsl",
+        opts = { wsl2 = { server = true } },
+        expected = true,
+      },
+      {
+        desc = "WSL2: server = false",
+        os_type = "wsl",
+        opts = { wsl2 = { server = false } },
+        expected = true,
+      },
+      {
+        desc = "WSL2: no wsl2 table (always valid)",
+        os_type = "wsl",
+        opts = {},
+        expected = true,
+      },
+      {
+        desc = "WSL2: server is not a boolean",
+        os_type = "wsl",
+        opts = { wsl2 = { server = "yes" } },
+        expected = false,
+      },
+      {
+        desc = "WSL2: wsl2 is not a table",
+        os_type = "wsl",
+        opts = { wsl2 = "invalid" },
+        expected = false,
       },
       -- Invalid mode
       {
@@ -134,6 +177,12 @@ describe("im-switch.options", function()
       {
         desc = "always enabled for windows (no config needed)",
         os_type = "windows",
+        opts = {},
+        expected = true,
+      },
+      {
+        desc = "always enabled for WSL (no config needed)",
+        os_type = "wsl",
         opts = {},
         expected = true,
       },

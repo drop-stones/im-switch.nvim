@@ -100,7 +100,11 @@ describe("im-switch.im", function()
       local buf1 = vim.api.nvim_get_current_buf()
       ---@diagnostic disable-next-line: duplicate-set-field
       vim.system = function(_, _)
-        return { wait = function() return { code = 0, stdout = "im-jp\n", stderr = "" } end }
+        return {
+          wait = function()
+            return { code = 0, stdout = "im-jp\n", stderr = "" }
+          end,
+        }
       end
       im.save_im_state()
       assert.equals("im-jp", vim.b[buf1].im_switch_last_state)
@@ -110,7 +114,11 @@ describe("im-switch.im", function()
       vim.api.nvim_set_current_buf(buf2)
       ---@diagnostic disable-next-line: duplicate-set-field
       vim.system = function(_, _)
-        return { wait = function() return { code = 0, stdout = "im-en\n", stderr = "" } end }
+        return {
+          wait = function()
+            return { code = 0, stdout = "im-en\n", stderr = "" }
+          end,
+        }
       end
       im.save_im_state()
       assert.equals("im-en", vim.b[buf2].im_switch_last_state)

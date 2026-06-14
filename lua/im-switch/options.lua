@@ -35,7 +35,23 @@ function M.validate_options(opts)
 
   local valid_modes = { restore = true, fixed = true }
   if opts.mode ~= nil and not valid_modes[opts.mode] then
-    require("im-switch.utils.notify").error("Invalid mode: '" .. tostring(opts.mode) .. "' (expected 'restore' or 'fixed')")
+    require("im-switch.utils.notify").error(
+      "Invalid mode: '" .. tostring(opts.mode) .. "' (expected 'restore' or 'fixed')"
+    )
+    return false
+  end
+
+  -- Platform settings, when present, must be tables. (Guard before
+  -- platform.validate, which indexes these and would otherwise throw on a
+  -- non-table value such as a number or boolean.)
+  for _, key in ipairs({ "macos", "linux", "wsl2" }) do
+    if opts[key] ~= nil and type(opts[key]) ~= "table" then
+      require("im-switch.utils.notify").error("'" .. key .. "' must be a table")
+      return false
+    end
+  end
+  if opts.wsl2 ~= nil and opts.wsl2.server ~= nil and type(opts.wsl2.server) ~= "boolean" then
+    require("im-switch.utils.notify").error("'wsl2.server' must be a boolean")
     return false
   end
 
@@ -55,11 +71,11 @@ function M.is_plugin_enabled(opts)
   if not platform then
     return false
   end
-  -- Windows/WSL: always enabled (no user config needed)
-  if platform.opts_key == "windows" then
+  -- Platforms with no required config (Windows/WSL2) are always enabled.
+  if platform.always_enabled then
     return true
   end
-  -- macOS/Linux: enabled when platform table is present
+  -- macOS/Linux: enabled when their settings table is present.
   return opts[platform.opts_key] ~= nil
 end
 

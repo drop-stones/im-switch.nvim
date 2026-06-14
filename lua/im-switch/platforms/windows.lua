@@ -3,6 +3,9 @@ local path = require("im-switch.utils.path")
 local M = {}
 
 M.opts_key = "windows"
+-- Windows/WSL control the IME with no required config, so the plugin is always
+-- enabled on these platforms (see options.is_plugin_enabled).
+M.always_enabled = true
 
 ---@param action "get"|"set"
 ---@param im_value? string
@@ -45,7 +48,9 @@ function M.check_health(opts)
   if vim.fn.executable(cli_path) == 1 then
     vim.health.ok("im-switch CLI is installed at " .. cli_path)
   else
-    vim.health.error("im-switch CLI is not installed at " .. cli_path .. " (rebuild or reinstall the plugin with your plugin manager)")
+    vim.health.error(
+      "im-switch CLI is not installed at " .. cli_path .. " (rebuild or reinstall the plugin with your plugin manager)"
+    )
   end
 end
 
