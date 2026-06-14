@@ -182,7 +182,11 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       cli_path = "/home/user/.local/share/im-switch.nvim/im-switch",
       cli_installed = true,
       opts = {
-        linux = { default_im = "keyboard-us", get_im_command = { "fcitx5-remote", "-n" }, set_im_command = { "fcitx5-remote", "-s" } },
+        linux = {
+          default_im = "keyboard-us",
+          get_im_command = { "fcitx5-remote", "-n" },
+          set_im_command = { "fcitx5-remote", "-s" },
+        },
         windows = {},
         macos = {},
       },
@@ -196,7 +200,11 @@ describe("im-switch.utils.im_command.get_im_command (table-driven)", function()
       cli_path = "/home/user/.local/share/im-switch.nvim/im-switch",
       cli_installed = true,
       opts = {
-        linux = { default_im = "keyboard-us", get_im_command = { "fcitx5-remote", "-n" }, set_im_command = { "fcitx5-remote", "-s" } },
+        linux = {
+          default_im = "keyboard-us",
+          get_im_command = { "fcitx5-remote", "-n" },
+          set_im_command = { "fcitx5-remote", "-s" },
+        },
         windows = {},
         macos = {},
       },

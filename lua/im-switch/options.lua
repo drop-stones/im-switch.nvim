@@ -35,7 +35,9 @@ function M.validate_options(opts)
 
   local valid_modes = { restore = true, fixed = true }
   if opts.mode ~= nil and not valid_modes[opts.mode] then
-    require("im-switch.utils.notify").error("Invalid mode: '" .. tostring(opts.mode) .. "' (expected 'restore' or 'fixed')")
+    require("im-switch.utils.notify").error(
+      "Invalid mode: '" .. tostring(opts.mode) .. "' (expected 'restore' or 'fixed')"
+    )
     return false
   end
 

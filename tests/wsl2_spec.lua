@@ -5,8 +5,8 @@ self-contained fallback), delegation to Windows when not opted in, the
 two-binary download plan, and platform routing.
 ]]
 
-local wsl2 = require("im-switch.platforms.wsl2")
 local path = require("im-switch.utils.path")
+local wsl2 = require("im-switch.platforms.wsl2")
 
 describe("im-switch.platforms.wsl2", function()
   local orig = {}

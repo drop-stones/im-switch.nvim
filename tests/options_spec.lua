@@ -3,9 +3,9 @@ options_spec.lua
 Unit tests for im-switch.options: validation, plugin activation, and setup.
 ]]
 
+local im_command = require("im-switch.utils.im_command")
 local options = require("im-switch.options")
 local os_utils = require("im-switch.utils.os")
-local im_command = require("im-switch.utils.im_command")
 
 describe("im-switch.options", function()
   local original_get_os_type

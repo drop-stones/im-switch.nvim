@@ -1,6 +1,6 @@
+local linux = require("im-switch.platforms.linux")
 local path = require("im-switch.utils.path")
 local windows = require("im-switch.platforms.windows")
-local linux = require("im-switch.platforms.linux")
 
 -- WSL2 inherits the Windows IME behavior and adds an opt-in loopback IPC fast
 -- path. Anything not overridden here falls through to the Windows platform.

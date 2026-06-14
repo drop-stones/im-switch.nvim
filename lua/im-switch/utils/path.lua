@@ -18,7 +18,9 @@ local function get_plugin_root_path()
   if result.code ~= 0 then
     -- Fallback: this file is at lua/im-switch/utils/path.lua, so root is 3 levels up
     local fallback = vim.fn.fnamemodify(this_dir, ":h:h:h")
-    notify.warn("Failed to detect plugin root (git rev-parse failed in " .. this_dir .. "), using fallback: " .. fallback)
+    notify.warn(
+      "Failed to detect plugin root (git rev-parse failed in " .. this_dir .. "), using fallback: " .. fallback
+    )
     cached_plugin_root_path = fallback
     return cached_plugin_root_path
   end
