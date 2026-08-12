@@ -7,7 +7,6 @@ local RELEASE_TAG = "v0.2.0"
 local DOWNLOAD_URL = "https://github.com/drop-stones/im-switch/releases/download/"
   .. RELEASE_TAG
   .. "/im-switch-%s.tar.gz"
-local REQUIRED_VERSION = { 0, 2, 0 }
 
 local M = {}
 
@@ -88,6 +87,9 @@ function M.parse_version(version_str)
   end
   return nil
 end
+
+---Minimum CLI version this plugin requires, derived from the release it downloads.
+local REQUIRED_VERSION = assert(M.parse_version(RELEASE_TAG), "Invalid RELEASE_TAG: " .. RELEASE_TAG)
 
 ---Compare two version tuples. Returns true if `a` >= `b`.
 ---@param a number[]
