@@ -52,6 +52,32 @@ local function get_download_plan(platform, cpu)
   return { { triple = platform.target_triple(cpu), path = path.get_cli_path() } }
 end
 
+---Get the path of the file recording the installed CLI version.
+---@return string
+local function get_version_file()
+  return vim.fs.joinpath(path.get_install_dir(), "version")
+end
+
+---Check that every planned binary is present.
+---@return boolean
+local function are_binaries_installed()
+  local platform = platforms.get_platform()
+  if not platform then
+    return false
+  end
+  local cpu = get_cpu()
+  if not cpu then
+    return false
+  end
+
+  for _, item in ipairs(get_download_plan(platform, cpu)) do
+    if vim.fn.executable(item.path) ~= 1 then
+      return false
+    end
+  end
+  return true
+end
+
 ---Parse a semantic version string (e.g., "im-switch 0.1.0") into a table.
 ---@param version_str string
 ---@return number[]?
@@ -78,23 +104,48 @@ function M.version_gte(a, b)
   return true
 end
 
----Check if the installed CLI meets the required version.
+---Read the CLI version recorded at install time.
+---@return number[]?
+function M.read_installed_version()
+  local file = io.open(get_version_file(), "r")
+  if not file then
+    return nil
+  end
+  local content = file:read("*l")
+  file:close()
+  return content and M.parse_version(content) or nil
+end
+
+---Record the CLI version that was just installed.
+function M.write_installed_version()
+  local file = io.open(get_version_file(), "w")
+  if not file then
+    notify.warn("Failed to record the installed im-switch CLI version")
+    return
+  end
+  file:write(RELEASE_TAG)
+  file:close()
+end
+
+---Check if the installed CLI is up to date, without running it.
+---Reads the version recorded at install time, so `setup()` stays cheap enough
+---to be called on every startup (e.g. with `vim.pack`).
+---@return boolean
+function M.is_up_to_date()
+  local version = M.read_installed_version()
+  if not version or not M.version_gte(version, REQUIRED_VERSION) then
+    return false
+  end
+  return are_binaries_installed()
+end
+
+---Check if the installed CLI meets the required version by running it.
+---Used as a fallback for installations made before the version file existed.
 ---@return boolean
 function M.is_version_satisfied()
-  local platform = platforms.get_platform()
-  if not platform then
-    return false
-  end
-  local cpu = get_cpu()
-  if not cpu then
-    return false
-  end
-
   -- Every planned binary must be present (WSL2 needs both client and server).
-  for _, item in ipairs(get_download_plan(platform, cpu)) do
-    if vim.fn.executable(item.path) ~= 1 then
-      return false
-    end
+  if not are_binaries_installed() then
+    return false
   end
 
   -- ...and the primary binary must meet the required version.
@@ -112,8 +163,17 @@ function M.is_version_satisfied()
 end
 
 ---Install the im-switch CLI binary from GitHub Releases.
+---Does nothing when an up-to-date CLI is already installed, so it is safe to
+---call on every startup.
 function M.setup()
+  if M.is_up_to_date() then
+    return
+  end
+
+  -- Installed by an older plugin version, before the version file existed:
+  -- record the version instead of downloading the same binary again.
   if M.is_version_satisfied() then
+    M.write_installed_version()
     return
   end
 
@@ -165,6 +225,8 @@ function M.setup()
 
   -- Clean up archive
   os.remove(archive_path)
+
+  M.write_installed_version()
 
   notify.info("Successfully installed im-switch CLI to " .. install_dir)
 end
