@@ -191,7 +191,9 @@ function M.setup()
   end
 
   local install_dir = path.get_install_dir()
-  local archive_path = vim.fs.joinpath(install_dir, "im-switch.tar.gz")
+  -- Keep the archive out of the install dir so concurrent installs (every
+  -- startup calls setup() with vim.pack) cannot overwrite each other's download.
+  local archive_path = vim.fn.tempname() .. ".tar.gz"
 
   -- Preflight check for required tools
   for _, tool in ipairs({ "curl", "tar" }) do
