@@ -101,9 +101,9 @@ function M.check_health(opts)
     vim.health.error("linux.default_im is not configured")
   end
 
+  -- An installed CLI is reported with its version by the common health check.
   local cli_path = path.get_cli_path()
   if vim.fn.executable(cli_path) == 1 then
-    vim.health.ok("im-switch CLI is installed at " .. cli_path)
     if has_custom_commands(opts) then
       vim.health.ok("Custom commands are configured and take priority over CLI")
     end

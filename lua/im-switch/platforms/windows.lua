@@ -44,10 +44,9 @@ end
 function M.check_health(opts)
   vim.health.ok("Windows/WSL plugin is enabled (always enabled on this platform)")
 
+  -- An installed CLI is reported with its version by the common health check.
   local cli_path = path.get_cli_path()
-  if vim.fn.executable(cli_path) == 1 then
-    vim.health.ok("im-switch CLI is installed at " .. cli_path)
-  else
+  if vim.fn.executable(cli_path) ~= 1 then
     vim.health.error(
       "im-switch CLI is not installed at " .. cli_path .. " (rebuild or reinstall the plugin with your plugin manager)"
     )

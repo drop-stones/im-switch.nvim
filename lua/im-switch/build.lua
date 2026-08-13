@@ -7,7 +7,6 @@ local RELEASE_TAG = "v0.2.0"
 local DOWNLOAD_URL = "https://github.com/drop-stones/im-switch/releases/download/"
   .. RELEASE_TAG
   .. "/im-switch-%s.tar.gz"
-local REQUIRED_VERSION = { 0, 2, 0 }
 
 local M = {}
 
@@ -52,6 +51,32 @@ local function get_download_plan(platform, cpu)
   return { { triple = platform.target_triple(cpu), path = path.get_cli_path() } }
 end
 
+---Get the path of the file recording the installed CLI version.
+---@return string
+local function get_version_file()
+  return vim.fs.joinpath(path.get_install_dir(), "version")
+end
+
+---Check that every planned binary is present.
+---@return boolean
+local function are_binaries_installed()
+  local platform = platforms.get_platform()
+  if not platform then
+    return false
+  end
+  local cpu = get_cpu()
+  if not cpu then
+    return false
+  end
+
+  for _, item in ipairs(get_download_plan(platform, cpu)) do
+    if vim.fn.executable(item.path) ~= 1 then
+      return false
+    end
+  end
+  return true
+end
+
 ---Parse a semantic version string (e.g., "im-switch 0.1.0") into a table.
 ---@param version_str string
 ---@return number[]?
@@ -62,6 +87,10 @@ function M.parse_version(version_str)
   end
   return nil
 end
+
+---Minimum CLI version this plugin requires, derived from the release it downloads.
+---@type number[]
+M.REQUIRED_VERSION = assert(M.parse_version(RELEASE_TAG), "Invalid RELEASE_TAG: " .. RELEASE_TAG)
 
 ---Compare two version tuples. Returns true if `a` >= `b`.
 ---@param a number[]
@@ -78,43 +107,75 @@ function M.version_gte(a, b)
   return true
 end
 
----Check if the installed CLI meets the required version.
----@return boolean
-function M.is_version_satisfied()
-  local platform = platforms.get_platform()
-  if not platform then
-    return false
+---Read the CLI version recorded at install time.
+---@return number[]?
+function M.read_installed_version()
+  local file = io.open(get_version_file(), "r")
+  if not file then
+    return nil
   end
-  local cpu = get_cpu()
-  if not cpu then
-    return false
+  local content = file:read("*l")
+  file:close()
+  return content and M.parse_version(content) or nil
+end
+
+---Record the version of the installed CLI.
+---@param version number[] Version reported by the installed CLI
+function M.write_installed_version(version)
+  local file = io.open(get_version_file(), "w")
+  if not file then
+    notify.warn("Failed to record the installed im-switch CLI version")
+    return
+  end
+  file:write(table.concat(version, "."))
+  file:close()
+end
+
+---Read the version of the installed CLI by running it.
+---@return number[]?
+function M.read_cli_version()
+  local cli_path = path.get_cli_path()
+  if vim.fn.executable(cli_path) ~= 1 then
+    return nil
   end
 
-  -- Every planned binary must be present (WSL2 needs both client and server).
-  for _, item in ipairs(get_download_plan(platform, cpu)) do
-    if vim.fn.executable(item.path) ~= 1 then
-      return false
-    end
-  end
-
-  -- ...and the primary binary must meet the required version.
-  local result = system.run_system({ path.get_cli_path(), "--version" })
+  local result = system.run_system({ cli_path, "--version" })
   if result.code ~= 0 then
-    return false
+    return nil
   end
 
-  local version = M.parse_version(vim.trim(result.stdout))
-  if not version then
+  return M.parse_version(vim.trim(result.stdout))
+end
+
+---Check if the installed CLI is up to date, without running it.
+---Reads the version recorded at install time, so `setup()` stays cheap enough
+---to be called on every startup (e.g. with `vim.pack`).
+---@return boolean
+function M.is_up_to_date()
+  local version = M.read_installed_version()
+  if not version or not M.version_gte(version, M.REQUIRED_VERSION) then
     return false
   end
-
-  return M.version_gte(version, REQUIRED_VERSION)
+  return are_binaries_installed()
 end
 
 ---Install the im-switch CLI binary from GitHub Releases.
+---Does nothing when an up-to-date CLI is already installed, so it is safe to
+---call on every startup.
 function M.setup()
-  if M.is_version_satisfied() then
+  if M.is_up_to_date() then
     return
+  end
+
+  -- Installed by an older plugin version, before the version file existed:
+  -- record the version it reports instead of downloading the same binary again.
+  -- Every planned binary must be present (WSL2 needs both client and server).
+  if are_binaries_installed() then
+    local installed = M.read_cli_version()
+    if installed and M.version_gte(installed, M.REQUIRED_VERSION) then
+      M.write_installed_version(installed)
+      return
+    end
   end
 
   local platform, plat_err = platforms.get_platform()
@@ -130,7 +191,9 @@ function M.setup()
   end
 
   local install_dir = path.get_install_dir()
-  local archive_path = vim.fs.joinpath(install_dir, "im-switch.tar.gz")
+  -- Keep the archive out of the install dir so concurrent installs (every
+  -- startup calls setup() with vim.pack) cannot overwrite each other's download.
+  local archive_path = vim.fn.tempname() .. ".tar.gz"
 
   -- Preflight check for required tools
   for _, tool in ipairs({ "curl", "tar" }) do
@@ -166,7 +229,22 @@ function M.setup()
   -- Clean up archive
   os.remove(archive_path)
 
+  -- Reading the version also verifies that the extracted binary actually runs.
+  local installed = M.read_cli_version()
+  if not installed then
+    notify.error("Failed to run the downloaded im-switch CLI at " .. path.get_cli_path())
+    return
+  end
+  M.write_installed_version(installed)
+
   notify.info("Successfully installed im-switch CLI to " .. install_dir)
+end
+
+---Discard the recorded version and install again.
+---Use this when the recorded version disagrees with the installed CLI.
+function M.reinstall()
+  os.remove(get_version_file())
+  M.setup()
 end
 
 return M
