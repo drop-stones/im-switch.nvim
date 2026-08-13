@@ -89,7 +89,8 @@ function M.parse_version(version_str)
 end
 
 ---Minimum CLI version this plugin requires, derived from the release it downloads.
-local REQUIRED_VERSION = assert(M.parse_version(RELEASE_TAG), "Invalid RELEASE_TAG: " .. RELEASE_TAG)
+---@type number[]
+M.REQUIRED_VERSION = assert(M.parse_version(RELEASE_TAG), "Invalid RELEASE_TAG: " .. RELEASE_TAG)
 
 ---Compare two version tuples. Returns true if `a` >= `b`.
 ---@param a number[]
@@ -129,13 +130,29 @@ function M.write_installed_version()
   file:close()
 end
 
+---Read the version of the installed CLI by running it.
+---@return number[]?
+function M.read_cli_version()
+  local cli_path = path.get_cli_path()
+  if vim.fn.executable(cli_path) ~= 1 then
+    return nil
+  end
+
+  local result = system.run_system({ cli_path, "--version" })
+  if result.code ~= 0 then
+    return nil
+  end
+
+  return M.parse_version(vim.trim(result.stdout))
+end
+
 ---Check if the installed CLI is up to date, without running it.
 ---Reads the version recorded at install time, so `setup()` stays cheap enough
 ---to be called on every startup (e.g. with `vim.pack`).
 ---@return boolean
 function M.is_up_to_date()
   local version = M.read_installed_version()
-  if not version or not M.version_gte(version, REQUIRED_VERSION) then
+  if not version or not M.version_gte(version, M.REQUIRED_VERSION) then
     return false
   end
   return are_binaries_installed()
@@ -151,17 +168,8 @@ function M.is_version_satisfied()
   end
 
   -- ...and the primary binary must meet the required version.
-  local result = system.run_system({ path.get_cli_path(), "--version" })
-  if result.code ~= 0 then
-    return false
-  end
-
-  local version = M.parse_version(vim.trim(result.stdout))
-  if not version then
-    return false
-  end
-
-  return M.version_gte(version, REQUIRED_VERSION)
+  local version = M.read_cli_version()
+  return version ~= nil and M.version_gte(version, M.REQUIRED_VERSION)
 end
 
 ---Install the im-switch CLI binary from GitHub Releases.
@@ -231,6 +239,13 @@ function M.setup()
   M.write_installed_version()
 
   notify.info("Successfully installed im-switch CLI to " .. install_dir)
+end
+
+---Discard the recorded version and install again.
+---Use this when the recorded version disagrees with the installed CLI.
+function M.reinstall()
+  os.remove(get_version_file())
+  M.setup()
 end
 
 return M

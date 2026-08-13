@@ -90,11 +90,13 @@ describe("im-switch.build", function()
       file:close()
     end
 
-    ---Create a fake, executable CLI binary in the fake install directory.
-    local function create_fake_cli()
+    ---Create a fake, executable CLI binary reporting `version` (defaults to the
+    ---version this plugin requires).
+    ---@param version? string
+    local function create_fake_cli(version)
       local cli_path = path.get_cli_path()
       local file = assert(io.open(cli_path, "w"))
-      file:write("#!/bin/sh\n")
+      file:write("#!/bin/sh\necho 'im-switch " .. (version or table.concat(build.REQUIRED_VERSION, ".")) .. "'\n")
       file:close()
       vim.fn.setfperm(cli_path, "rwxr-xr-x")
     end
@@ -155,6 +157,22 @@ describe("im-switch.build", function()
       create_fake_cli()
       build.write_installed_version()
       assert.is_true(build.is_up_to_date())
+    end)
+
+    it("read_cli_version returns nil when the CLI is missing", function()
+      assert.is_nil(build.read_cli_version())
+    end)
+
+    it("read_cli_version returns the version reported by the CLI", function()
+      create_fake_cli("1.2.3")
+      assert.are.same({ 1, 2, 3 }, build.read_cli_version())
+    end)
+
+    it("reinstall re-records the version without downloading", function()
+      create_fake_cli()
+      write_version_file("v0.0.1")
+      build.reinstall()
+      assert.are.same(build.REQUIRED_VERSION, build.read_installed_version())
     end)
   end)
 end)
