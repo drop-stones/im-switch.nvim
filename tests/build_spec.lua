@@ -80,6 +80,7 @@ describe("im-switch.build", function()
 
   describe("installed version file", function()
     local original_get_install_dir
+    local original_read_cli_version
     local install_dir
 
     ---Write `content` to the version file of the fake install directory.
@@ -105,6 +106,7 @@ describe("im-switch.build", function()
       install_dir = vim.fn.tempname()
       vim.fn.mkdir(install_dir, "p")
       original_get_install_dir = path.get_install_dir
+      original_read_cli_version = build.read_cli_version
       ---@diagnostic disable-next-line: duplicate-set-field
       path.get_install_dir = function()
         return install_dir
@@ -118,6 +120,7 @@ describe("im-switch.build", function()
 
     after_each(function()
       path.get_install_dir = original_get_install_dir
+      build.read_cli_version = original_read_cli_version
       vim.fn.delete(install_dir, "rf")
     end)
 
@@ -130,11 +133,9 @@ describe("im-switch.build", function()
       assert.are.same({ 1, 2, 3 }, build.read_installed_version())
     end)
 
-    it("write_installed_version records a readable version", function()
-      build.write_installed_version()
-      local version = build.read_installed_version()
-      assert.is_not_nil(version)
-      assert.is_true(build.version_gte(version, { 0, 0, 0 }))
+    it("write_installed_version records the given version", function()
+      build.write_installed_version({ 1, 2, 3 })
+      assert.are.same({ 1, 2, 3 }, build.read_installed_version())
     end)
 
     it("is_up_to_date returns false when no version is recorded", function()
@@ -149,13 +150,13 @@ describe("im-switch.build", function()
     end)
 
     it("is_up_to_date returns false when the binary is missing", function()
-      build.write_installed_version()
+      build.write_installed_version(build.REQUIRED_VERSION)
       assert.is_false(build.is_up_to_date())
     end)
 
     it("is_up_to_date returns true when the recorded version and the binary are present", function()
       create_fake_cli()
-      build.write_installed_version()
+      build.write_installed_version(build.REQUIRED_VERSION)
       assert.is_true(build.is_up_to_date())
     end)
 
@@ -168,11 +169,17 @@ describe("im-switch.build", function()
       assert.are.same({ 1, 2, 3 }, build.read_cli_version())
     end)
 
-    it("reinstall re-records the version without downloading", function()
+    it("reinstall records the version reported by the CLI", function()
       create_fake_cli()
       write_version_file("v0.0.1")
+      -- Stub the CLI call so a failure to run the fake binary cannot fall
+      -- through to a real download.
+      ---@diagnostic disable-next-line: duplicate-set-field
+      build.read_cli_version = function()
+        return { 99, 0, 0 }
+      end
       build.reinstall()
-      assert.are.same(build.REQUIRED_VERSION, build.read_installed_version())
+      assert.are.same({ 99, 0, 0 }, build.read_installed_version())
     end)
   end)
 end)

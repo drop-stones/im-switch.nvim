@@ -119,14 +119,15 @@ function M.read_installed_version()
   return content and M.parse_version(content) or nil
 end
 
----Record the CLI version that was just installed.
-function M.write_installed_version()
+---Record the version of the installed CLI.
+---@param version number[] Version reported by the installed CLI
+function M.write_installed_version(version)
   local file = io.open(get_version_file(), "w")
   if not file then
     notify.warn("Failed to record the installed im-switch CLI version")
     return
   end
-  file:write(RELEASE_TAG)
+  file:write(table.concat(version, "."))
   file:close()
 end
 
@@ -158,20 +159,6 @@ function M.is_up_to_date()
   return are_binaries_installed()
 end
 
----Check if the installed CLI meets the required version by running it.
----Used as a fallback for installations made before the version file existed.
----@return boolean
-function M.is_version_satisfied()
-  -- Every planned binary must be present (WSL2 needs both client and server).
-  if not are_binaries_installed() then
-    return false
-  end
-
-  -- ...and the primary binary must meet the required version.
-  local version = M.read_cli_version()
-  return version ~= nil and M.version_gte(version, M.REQUIRED_VERSION)
-end
-
 ---Install the im-switch CLI binary from GitHub Releases.
 ---Does nothing when an up-to-date CLI is already installed, so it is safe to
 ---call on every startup.
@@ -181,10 +168,14 @@ function M.setup()
   end
 
   -- Installed by an older plugin version, before the version file existed:
-  -- record the version instead of downloading the same binary again.
-  if M.is_version_satisfied() then
-    M.write_installed_version()
-    return
+  -- record the version it reports instead of downloading the same binary again.
+  -- Every planned binary must be present (WSL2 needs both client and server).
+  if are_binaries_installed() then
+    local installed = M.read_cli_version()
+    if installed and M.version_gte(installed, M.REQUIRED_VERSION) then
+      M.write_installed_version(installed)
+      return
+    end
   end
 
   local platform, plat_err = platforms.get_platform()
@@ -236,7 +227,13 @@ function M.setup()
   -- Clean up archive
   os.remove(archive_path)
 
-  M.write_installed_version()
+  -- Reading the version also verifies that the extracted binary actually runs.
+  local installed = M.read_cli_version()
+  if not installed then
+    notify.error("Failed to run the downloaded im-switch CLI at " .. path.get_cli_path())
+    return
+  end
+  M.write_installed_version(installed)
 
   notify.info("Successfully installed im-switch CLI to " .. install_dir)
 end
